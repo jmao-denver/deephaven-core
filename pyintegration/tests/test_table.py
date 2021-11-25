@@ -2,10 +2,12 @@
 #   Copyright (c) 2016-2021 Deephaven Data Labs and Patent Pending
 #
 import unittest
+from pprint import pprint
 from time import sleep
 
-from deephaven2 import DHError, read_csv, time_table, empty_table, SortDirection
+from deephaven2 import DHError, read_csv, time_table, empty_table, SortDirection, dtypes
 from deephaven2.agg import sum_, weighted_avg, avg, pct
+from deephaven2.column import Column, ColumnType
 from deephaven2.table import Table
 from tests.testbase import BaseTestCase
 
@@ -13,6 +15,7 @@ from tests.testbase import BaseTestCase
 class TableTestCase(BaseTestCase):
     def setUp(self):
         self.test_table = read_csv("tests/data/test_table.csv")
+        pprint(self.test_table.columns)
 
     def tearDown(self) -> None:
         self.test_table = None
@@ -20,6 +23,11 @@ class TableTestCase(BaseTestCase):
     def test_empty_table(self):
         t = empty_table(10)
         self.assertEqual(0, len(t.columns))
+
+    def test_column(self):
+        col = Column(name="col1", data_type=dtypes.double)
+        # pprint(col)
+        self.assertEqual(col.column_type, ColumnType.NORMAL)
 
     #
     # Table creation
@@ -272,7 +280,6 @@ class TableTestCase(BaseTestCase):
     @unittest.skip("Wait for the completion of Ryan's db reorg project.")
     def test_combo_agg(self):
         num_distinct_a = self.test_table.select_distinct(cols=["a"]).size
-
         combo_agg = [sum_(cols=["SumC=c"]),
                      avg(cols=["AvgB = b", "AvgD = d"]),
                      pct(percentile=0.5, cols=["PctC = c"]),

@@ -9,60 +9,13 @@ from typing import List
 import jpy
 
 from deephaven2 import DHError
-from deephaven2.column import Column
 from deephaven2.agg import Aggregation
+from deephaven2.column import Column, ColumnType
 from deephaven2.constants import SortDirection
+from deephaven2.dtypes import j_class_lookup
 
 _JTableTools = jpy.get_type("io.deephaven.db.tables.utils.TableTools")
 _JSortPair = jpy.get_type("io.deephaven.db.tables.SortPair")
-
-
-#
-# module level functions
-#
-# region factory methods
-def empty_table(size: int) -> Table:
-    """ Create an empty table.
-
-    Args:
-        size (int): the number of rows
-
-    Returns:
-         a Table
-
-    Raises:
-        DHError
-    """
-    try:
-        return Table(j_table=_JTableTools.emptyTable(size))
-    except Exception as e:
-        raise DHError(e, "failed to create an empty table.") from e
-
-
-def time_table(period: str, start_time: str = None) -> Table:
-    """ Creates a table that adds a new row on a regular interval.
-
-    Args:
-        period (str): time interval between new row additions
-        start_time (str): start time for adding new rows
-
-    Returns:
-        a Table
-
-    Raises:
-        DHError
-    """
-    try:
-        if start_time:
-            return Table(j_table=_JTableTools.timeTable(start_time, period))
-        else:
-            return Table(j_table=_JTableTools.timeTable(period))
-
-    except Exception as e:
-        raise DHError(e, "failed to create a time table.") from e
-
-
-# endregion
 
 
 class Table:
@@ -111,11 +64,9 @@ class Table:
         for i in range(j_col_list.size()):
             j_col = j_col_list.get(i)
             self._schema.append(Column(name=j_col.getName(),
-                                       data_type=j_col.getDataType().getName(),
-                                       component_type=j_col.getComponentType(),
-                                       column_type=j_col.getColumnType(),
-                                       isPartitioning=j_col.isPartitioning(),
-                                       isGrouping=j_col.isGrouping()))
+                                       data_type=j_class_lookup(j_col.getDataType()),
+                                       component_type=j_class_lookup(j_col.getComponentType()),
+                                       column_type=ColumnType(j_col.getColumnType())))
         return self._schema
 
     def to_string(self, num_rows: int = 10, cols: List[str] = []) -> str:
@@ -135,6 +86,16 @@ class Table:
             return _JTableTools.string(self._j_table, num_rows, *cols)
         except Exception as e:
             raise DHError(e, "table to_string failed") from e
+
+    def to_html(self):
+        """
+        Returns a printout of a table formatted as HTML. Limit use to small tables to avoid running out of memory.
+
+        :param source: (io.deephaven.db.tables.Table) - a Deephaven table object
+        :return: (java.lang.String) a String of the table printout formatted as HTML
+        """
+
+        return _JTableTools.html(self._j_table)
 
     # def snapshot(self):
     #     """ Take a snapshot of the table. """

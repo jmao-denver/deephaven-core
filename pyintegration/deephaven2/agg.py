@@ -1,8 +1,7 @@
 #
 #  Copyright (c) 2016-2021 Deephaven Data Labs and Patent Pending
 #
-from __future__ import annotations
-from typing import List, Any
+from typing import List
 
 import jpy
 
@@ -17,6 +16,9 @@ class Aggregation:
 
     def __init__(self, j_aggregation):
         self._j_aggregation = j_aggregation
+
+    def __repr__(self):
+        return self._j_aggregation.toString()
 
     @property
     def j_agg(self):
