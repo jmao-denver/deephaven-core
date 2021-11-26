@@ -3,11 +3,9 @@
  * ------------------------------------------------------------------------------------------------------------------ */
 package io.deephaven.db.v2.select;
 
-import io.deephaven.base.verify.Require;
 import io.deephaven.db.tables.ColumnDefinition;
 import io.deephaven.db.tables.TableDefinition;
 import io.deephaven.db.util.DhShortComparisons;
-import io.deephaven.db.util.DhLongComparisons;
 import io.deephaven.db.v2.select.chunkfilters.ShortRangeComparator;
 import io.deephaven.db.v2.sources.ColumnSource;
 import io.deephaven.db.v2.utils.Index;
@@ -38,9 +36,9 @@ public class ShortRangeFilter extends AbstractRangeFilter {
             case LESS_THAN_OR_EQUAL:
                 return new ShortRangeFilter(columnName, RangeConditionFilter.parseShortFilter(value), QueryConstants.NULL_SHORT, true, true);
             case GREATER_THAN:
-                return new ShortRangeFilter(columnName, RangeConditionFilter.parseShortFilter(value), Short.MAX_VALUE, false, true);
+                return new ShortRangeFilter(columnName, RangeConditionFilter.parseShortFilter(value), QueryConstants.MAX_SHORT, false, true);
             case GREATER_THAN_OR_EQUAL:
-                return new ShortRangeFilter(columnName, RangeConditionFilter.parseShortFilter(value), Short.MAX_VALUE, true, true);
+                return new ShortRangeFilter(columnName, RangeConditionFilter.parseShortFilter(value), QueryConstants.MAX_SHORT, true, true);
             default:
                 throw new IllegalArgumentException("RangeConditionFilter does not support condition " + condition);
         }

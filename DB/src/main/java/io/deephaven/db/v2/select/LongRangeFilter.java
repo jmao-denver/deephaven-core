@@ -3,10 +3,8 @@
  * ------------------------------------------------------------------------------------------------------------------ */
 package io.deephaven.db.v2.select;
 
-import io.deephaven.base.verify.Require;
 import io.deephaven.db.tables.ColumnDefinition;
 import io.deephaven.db.tables.TableDefinition;
-import io.deephaven.db.util.DhLongComparisons;
 import io.deephaven.db.util.DhLongComparisons;
 import io.deephaven.db.v2.select.chunkfilters.LongRangeComparator;
 import io.deephaven.db.v2.sources.ColumnSource;
@@ -38,9 +36,9 @@ public class LongRangeFilter extends AbstractRangeFilter {
             case LESS_THAN_OR_EQUAL:
                 return new LongRangeFilter(columnName, RangeConditionFilter.parseLongFilter(value), QueryConstants.NULL_LONG, true, true);
             case GREATER_THAN:
-                return new LongRangeFilter(columnName, RangeConditionFilter.parseLongFilter(value), Long.MAX_VALUE, false, true);
+                return new LongRangeFilter(columnName, RangeConditionFilter.parseLongFilter(value), QueryConstants.MAX_LONG, false, true);
             case GREATER_THAN_OR_EQUAL:
-                return new LongRangeFilter(columnName, RangeConditionFilter.parseLongFilter(value), Long.MAX_VALUE, true, true);
+                return new LongRangeFilter(columnName, RangeConditionFilter.parseLongFilter(value), QueryConstants.MAX_LONG, true, true);
             default:
                 throw new IllegalArgumentException("RangeConditionFilter does not support condition " + condition);
         }

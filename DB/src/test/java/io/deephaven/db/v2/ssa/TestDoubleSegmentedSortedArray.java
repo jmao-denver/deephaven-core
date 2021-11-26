@@ -84,7 +84,6 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
 
         final DoubleSegmentedSortedArray ssa = new DoubleSegmentedSortedArray(desc.nodeSize());
 
-        //noinspection unchecked
         final ColumnSource<Double> valueSource = asDouble.getColumnSource("Value");
 
         checkSsaInitial(asDouble, ssa, valueSource, desc);
@@ -93,16 +92,17 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
             final ShiftAwareListener asDoubleListener = new InstrumentedShiftAwareListenerAdapter((DynamicTable) asDouble, false) {
                 @Override
                 public void onUpdate(Update upstream) {
-                    try (final ColumnSource.GetContext checkContext = valueSource.makeGetContext(asDouble.getIndex().getPrevIndex().intSize())) {
-                        final Index relevantIndices = asDouble.getIndex().getPrevIndex();
+                    try (final ColumnSource.GetContext checkContext = valueSource.makeGetContext(asDouble.getIndex().getPrevIndex().intSize());
+                         final Index relevantIndices = asDouble.getIndex().getPrevIndex().clone()) {
+
                         checkSsa(ssa, valueSource.getPrevChunk(checkContext, relevantIndices).asDoubleChunk(), relevantIndices.asKeyIndicesChunk(), desc);
                     }
 
                     final int size = Math.max(upstream.modified.intSize() + Math.max(upstream.added.intSize(), upstream.removed.intSize()), (int) upstream.shifted.getEffectiveSize());
-                    try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(size)) {
+                    try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(size);
+                         final Index takeout = upstream.removed.union(upstream.getModifiedPreShift()).clone();) {
                         ssa.validate();
 
-                        final Index takeout = upstream.removed.union(upstream.getModifiedPreShift());
                         if (takeout.nonempty()) {
                             final DoubleChunk<? extends Values> valuesToRemove = valueSource.getPrevChunk(getContext, takeout).asDoubleChunk();
                             ssa.remove(valuesToRemove, takeout.asKeyIndicesChunk());
@@ -110,8 +110,8 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
 
                         ssa.validate();
 
-                        try (final ColumnSource.GetContext checkContext = valueSource.makeGetContext(asDouble.getIndex().getPrevIndex().intSize())) {
-                            final Index relevantIndices = asDouble.getIndex().getPrevIndex().minus(takeout);
+                        try (final ColumnSource.GetContext checkContext = valueSource.makeGetContext(asDouble.getIndex().getPrevIndex().intSize());
+                             final Index relevantIndices = asDouble.getIndex().getPrevIndex().minus(takeout).clone()) {
                             checkSsa(ssa, valueSource.getPrevChunk(checkContext, relevantIndices).asDoubleChunk(), relevantIndices.asKeyIndicesChunk(), desc);
                         }
 
@@ -119,33 +119,35 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
                             final IndexShiftData.Iterator sit = upstream.shifted.applyIterator();
                             while (sit.hasNext()) {
                                 sit.next();
-                                final Index indexToShift = table.getIndex().getPrevIndex().subindexByKey(sit.beginRange(), sit.endRange()).minus(upstream.getModifiedPreShift()).minus(upstream.removed);
-                                if (indexToShift.empty()) {
-                                    continue;
-                                }
+                                try (Index indexToShift = table.getIndex().getPrevIndex().subindexByKey(sit.beginRange(), sit.endRange()).minus(upstream.getModifiedPreShift()).minus(upstream.removed).clone()) {
+                                    if (indexToShift.empty()) {
+                                        continue;
+                                    }
 
-                                final DoubleChunk<? extends Values> shiftValues = valueSource.getPrevChunk(getContext, indexToShift).asDoubleChunk();
+                                    final DoubleChunk<? extends Values> shiftValues = valueSource.getPrevChunk(getContext, indexToShift).asDoubleChunk();
 
-                                if (sit.polarityReversed()) {
-                                    ssa.applyShiftReverse(shiftValues, indexToShift.asKeyIndicesChunk(), sit.shiftDelta());
-                                } else {
-                                    ssa.applyShift(shiftValues, indexToShift.asKeyIndicesChunk(), sit.shiftDelta());
+                                    if (sit.polarityReversed()) {
+                                        ssa.applyShiftReverse(shiftValues, indexToShift.asKeyIndicesChunk(), sit.shiftDelta());
+                                    } else {
+                                        ssa.applyShift(shiftValues, indexToShift.asKeyIndicesChunk(), sit.shiftDelta());
+                                    }
                                 }
                             }
                         }
 
                         ssa.validate();
 
-                        final Index putin = upstream.added.union(upstream.modified);
+                        try (Index putin = upstream.added.union(upstream.modified).clone()) {
 
-                        try (final ColumnSource.GetContext checkContext = valueSource.makeGetContext(asDouble.intSize())) {
-                            final Index relevantIndices = asDouble.getIndex().minus(putin);
-                            checkSsa(ssa, valueSource.getChunk(checkContext, relevantIndices).asDoubleChunk(), relevantIndices.asKeyIndicesChunk(), desc);
-                        }
+                            try (final ColumnSource.GetContext checkContext = valueSource.makeGetContext(asDouble.intSize());
+                                 final Index relevantIndices = asDouble.getIndex().minus(putin).clone();) {
+                                checkSsa(ssa, valueSource.getChunk(checkContext, relevantIndices).asDoubleChunk(), relevantIndices.asKeyIndicesChunk(), desc);
+                            }
 
-                        if (putin.nonempty()) {
-                            final DoubleChunk<? extends Values> valuesToInsert = valueSource.getChunk(getContext, putin).asDoubleChunk();
-                            ssa.insert(valuesToInsert, putin.asKeyIndicesChunk());
+                            if (putin.nonempty()) {
+                                final DoubleChunk<? extends Values> valuesToInsert = valueSource.getChunk(getContext, putin).asDoubleChunk();
+                                ssa.insert(valuesToInsert, putin.asKeyIndicesChunk());
+                            }
                         }
 
                         ssa.validate();
@@ -155,12 +157,13 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
             ((DynamicTable) asDouble).listenForUpdates(asDoubleListener);
 
             while (desc.advance(50)) {
-                System.out.println();
                 LiveTableMonitor.DEFAULT.runWithinUnitTestCycle(() ->
                         GenerateTableUpdates.generateShiftAwareTableUpdates(GenerateTableUpdates.DEFAULT_PROFILE, desc.tableSize(), random, table, columnInfo));
 
-                try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(asDouble.intSize())) {
-                    checkSsa(ssa, valueSource.getChunk(getContext, asDouble.getIndex()).asDoubleChunk(), asDouble.getIndex().asKeyIndicesChunk(), desc);
+                try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(asDouble.intSize());
+                     final Index index = asDouble.getIndex().clone()) {
+
+                    checkSsa(ssa, valueSource.getChunk(getContext, index).asDoubleChunk(), index.asKeyIndicesChunk(), desc);
                 }
             }
         }
@@ -176,7 +179,6 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
 
         final DoubleSegmentedSortedArray ssa = new DoubleSegmentedSortedArray(desc.nodeSize());
 
-        //noinspection unchecked
         final ColumnSource<Double> valueSource = asDouble.getColumnSource("Value");
 
         checkSsaInitial(asDouble, ssa, valueSource, desc);
@@ -205,8 +207,10 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
                     table.notifyListeners(notify[0], notify[1], notify[2]);
                 });
 
-                try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(asDouble.intSize())) {
-                    checkSsa(ssa, valueSource.getChunk(getContext, asDouble.getIndex()).asDoubleChunk(), asDouble.getIndex().asKeyIndicesChunk(), desc);
+                try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(asDouble.intSize());
+                     final Index index = asDouble.getIndex().clone()) {
+
+                    checkSsa(ssa, valueSource.getChunk(getContext, index).asDoubleChunk(), index.asKeyIndicesChunk(), desc);
                 }
 
                 if (!allowAddition && table.size() == 0) {
@@ -217,9 +221,10 @@ public class TestDoubleSegmentedSortedArray extends LiveTableTestCase {
     }
 
     private void checkSsaInitial(Table asDouble, DoubleSegmentedSortedArray ssa, ColumnSource<?> valueSource, @NotNull final SsaTestHelpers.TestDescriptor desc) {
-        try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(asDouble.intSize())) {
-            final DoubleChunk<? extends Values> valueChunk = valueSource.getChunk(getContext, asDouble.getIndex()).asDoubleChunk();
-            final LongChunk<Attributes.OrderedKeyIndices> tableIndexChunk = asDouble.getIndex().asKeyIndicesChunk();
+        try (final ColumnSource.GetContext getContext = valueSource.makeGetContext(asDouble.intSize());
+             final Index index = asDouble.getIndex().clone()) {
+            final DoubleChunk<? extends Values> valueChunk = valueSource.getChunk(getContext, index).asDoubleChunk();
+            final LongChunk<Attributes.OrderedKeyIndices> tableIndexChunk = index.asKeyIndicesChunk();
 
             ssa.insert(valueChunk, tableIndexChunk);
 

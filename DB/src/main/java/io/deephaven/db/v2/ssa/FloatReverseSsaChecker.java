@@ -13,6 +13,8 @@ import io.deephaven.db.v2.sources.chunk.Attributes.Values;
 import io.deephaven.db.v2.sources.chunk.FloatChunk;
 import io.deephaven.db.v2.sources.chunk.Chunk;
 import io.deephaven.db.v2.sources.chunk.LongChunk;
+import io.deephaven.db.v2.sources.chunk.WritableFloatChunk;
+import io.deephaven.db.v2.sources.chunk.WritableLongChunk;
 import io.deephaven.db.v2.utils.ChunkUtils;
 
 public class FloatReverseSsaChecker implements SsaChecker {
@@ -29,42 +31,43 @@ public class FloatReverseSsaChecker implements SsaChecker {
         ssa.validateInternal();
 
         //noinspection unchecked
-        final FloatChunk<Values> resultChunk = (FloatChunk) ssa.asFloatChunk();
-        final LongChunk<KeyIndices> indexChunk = ssa.keyIndicesChunk();
+        try (final WritableFloatChunk<Values> resultChunk = (WritableFloatChunk) ssa.asFloatChunk();
+             final WritableLongChunk<KeyIndices> indexChunk = ssa.keyIndicesChunk()) {
 
-        Assert.eq(valueChunk.size(), "valueChunk.size()", resultChunk.size(), "resultChunk.size()");
-        Assert.eq(tableIndexChunk.size(), "tableIndexChunk.size()", indexChunk.size(), "indexChunk.size()");
+            Assert.eq(valueChunk.size(), "valueChunk.size()", resultChunk.size(), "resultChunk.size()");
+            Assert.eq(tableIndexChunk.size(), "tableIndexChunk.size()", indexChunk.size(), "indexChunk.size()");
 
-        if (!FloatChunkEquals.equalReduce(resultChunk, valueChunk)) {
-            final StringBuilder messageBuilder = new StringBuilder("Values do not match:\n");
-            messageBuilder.append("Result Values:\n").append(ChunkUtils.dumpChunk(resultChunk)).append("\n");
-            messageBuilder.append("Table Values:\n").append(ChunkUtils.dumpChunk(valueChunk)).append("\n");;
+            if (!FloatChunkEquals.equalReduce(resultChunk, valueChunk)) {
+                final StringBuilder messageBuilder = new StringBuilder("Values do not match:\n");
+                messageBuilder.append("Result Values:\n").append(ChunkUtils.dumpChunk(resultChunk)).append("\n");
+                messageBuilder.append("Table Values:\n").append(ChunkUtils.dumpChunk(valueChunk)).append("\n");
 
-            for (int ii = 0; ii < resultChunk.size(); ++ii) {
-                if (!eq(resultChunk.get(ii), valueChunk.get(ii))) {
-                    messageBuilder.append("First difference at ").append(ii).append(("\n"));
-                    break;
+                for (int ii = 0; ii < resultChunk.size(); ++ii) {
+                    if (!eq(resultChunk.get(ii), valueChunk.get(ii))) {
+                        messageBuilder.append("First difference at ").append(ii).append(("\n"));
+                        break;
+                    }
                 }
+
+                throw new SsaCheckException(messageBuilder.toString());
             }
+            if (!LongChunkEquals.equalReduce(indexChunk, tableIndexChunk)) {
+                final StringBuilder messageBuilder = new StringBuilder("Values do not match:\n");
+                messageBuilder.append("Result:\n").append(ChunkUtils.dumpChunk(resultChunk)).append("\n");
+                messageBuilder.append("Values:\n").append(ChunkUtils.dumpChunk(valueChunk)).append("\n");
 
-            throw new SsaCheckException(messageBuilder.toString());
-        }
-        if (!LongChunkEquals.equalReduce(indexChunk, tableIndexChunk)) {
-            final StringBuilder messageBuilder = new StringBuilder("Values do not match:\n");
-            messageBuilder.append("Result:\n").append(ChunkUtils.dumpChunk(resultChunk)).append("\n");
-            messageBuilder.append("Values:\n").append(ChunkUtils.dumpChunk(valueChunk)).append("\n");;
+                messageBuilder.append("Result Index:\n").append(ChunkUtils.dumpChunk(indexChunk)).append("\n");
+                messageBuilder.append("Table Index:\n").append(ChunkUtils.dumpChunk(tableIndexChunk)).append("\n");
 
-            messageBuilder.append("Result Index:\n").append(ChunkUtils.dumpChunk(indexChunk)).append("\n");
-            messageBuilder.append("Table Index:\n").append(ChunkUtils.dumpChunk(tableIndexChunk)).append("\n");;
-
-            for (int ii = 0; ii < indexChunk.size(); ++ii) {
-                if (indexChunk.get(ii) != tableIndexChunk.get(ii)) {
-                    messageBuilder.append("First difference at ").append(ii).append(("\n"));
-                    break;
+                for (int ii = 0; ii < indexChunk.size(); ++ii) {
+                    if (indexChunk.get(ii) != tableIndexChunk.get(ii)) {
+                        messageBuilder.append("First difference at ").append(ii).append(("\n"));
+                        break;
+                    }
                 }
-            }
 
-            throw new SsaCheckException(messageBuilder.toString());
+                throw new SsaCheckException(messageBuilder.toString());
+            }
         }
     }
 

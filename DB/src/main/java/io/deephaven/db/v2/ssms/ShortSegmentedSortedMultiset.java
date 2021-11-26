@@ -2100,7 +2100,7 @@ public final class ShortSegmentedSortedMultiset implements SegmentedSortedMultiS
 
     @Override
     public WritableShortChunk<?> keyChunk() {
-        final WritableShortChunk keyChunk = WritableShortChunk.makeWritableChunk(intSize());
+        final WritableShortChunk<?> keyChunk = WritableShortChunk.makeWritableChunk(intSize());
         fillKeyChunk(keyChunk, 0);
         return keyChunk;
     }
@@ -2128,7 +2128,7 @@ public final class ShortSegmentedSortedMultiset implements SegmentedSortedMultiS
 
     @Override
     public WritableLongChunk<?> countChunk() {
-        final WritableLongChunk countChunk = WritableLongChunk.makeWritableChunk(intSize());
+        final WritableLongChunk<Attributes.Any> countChunk = WritableLongChunk.makeWritableChunk(intSize());
         if (leafCount == 1) {
             countChunk.copyFromTypedArray(directoryCount, 0, 0, size);
         } else if (leafCount > 0) {

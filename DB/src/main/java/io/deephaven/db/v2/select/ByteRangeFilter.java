@@ -3,11 +3,9 @@
  * ------------------------------------------------------------------------------------------------------------------ */
 package io.deephaven.db.v2.select;
 
-import io.deephaven.base.verify.Require;
 import io.deephaven.db.tables.ColumnDefinition;
 import io.deephaven.db.tables.TableDefinition;
 import io.deephaven.db.util.DhByteComparisons;
-import io.deephaven.db.util.DhLongComparisons;
 import io.deephaven.db.v2.select.chunkfilters.ByteRangeComparator;
 import io.deephaven.db.v2.sources.ColumnSource;
 import io.deephaven.db.v2.utils.Index;
@@ -38,9 +36,9 @@ public class ByteRangeFilter extends AbstractRangeFilter {
             case LESS_THAN_OR_EQUAL:
                 return new ByteRangeFilter(columnName, RangeConditionFilter.parseByteFilter(value), QueryConstants.NULL_BYTE, true, true);
             case GREATER_THAN:
-                return new ByteRangeFilter(columnName, RangeConditionFilter.parseByteFilter(value), Byte.MAX_VALUE, false, true);
+                return new ByteRangeFilter(columnName, RangeConditionFilter.parseByteFilter(value), QueryConstants.MAX_BYTE, false, true);
             case GREATER_THAN_OR_EQUAL:
-                return new ByteRangeFilter(columnName, RangeConditionFilter.parseByteFilter(value), Byte.MAX_VALUE, true, true);
+                return new ByteRangeFilter(columnName, RangeConditionFilter.parseByteFilter(value), QueryConstants.MAX_BYTE, true, true);
             default:
                 throw new IllegalArgumentException("RangeConditionFilter does not support condition " + condition);
         }

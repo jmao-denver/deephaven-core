@@ -2128,7 +2128,7 @@ public final class DoubleSegmentedSortedMultiset implements SegmentedSortedMulti
 
     @Override
     public WritableLongChunk<?> countChunk() {
-        final WritableLongChunk countChunk = WritableLongChunk.makeWritableChunk(intSize());
+        final WritableLongChunk<Attributes.Any> countChunk = WritableLongChunk.makeWritableChunk(intSize());
         if (leafCount == 1) {
             countChunk.copyFromTypedArray(directoryCount, 0, 0, size);
         } else if (leafCount > 0) {

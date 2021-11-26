@@ -3,11 +3,9 @@
  * ------------------------------------------------------------------------------------------------------------------ */
 package io.deephaven.db.v2.select;
 
-import io.deephaven.base.verify.Require;
 import io.deephaven.db.tables.ColumnDefinition;
 import io.deephaven.db.tables.TableDefinition;
 import io.deephaven.db.util.DhIntComparisons;
-import io.deephaven.db.util.DhLongComparisons;
 import io.deephaven.db.v2.select.chunkfilters.IntRangeComparator;
 import io.deephaven.db.v2.sources.ColumnSource;
 import io.deephaven.db.v2.utils.Index;
@@ -38,9 +36,9 @@ public class IntRangeFilter extends AbstractRangeFilter {
             case LESS_THAN_OR_EQUAL:
                 return new IntRangeFilter(columnName, RangeConditionFilter.parseIntFilter(value), QueryConstants.NULL_INT, true, true);
             case GREATER_THAN:
-                return new IntRangeFilter(columnName, RangeConditionFilter.parseIntFilter(value), Integer.MAX_VALUE, false, true);
+                return new IntRangeFilter(columnName, RangeConditionFilter.parseIntFilter(value), QueryConstants.MAX_INT, false, true);
             case GREATER_THAN_OR_EQUAL:
-                return new IntRangeFilter(columnName, RangeConditionFilter.parseIntFilter(value), Integer.MAX_VALUE, true, true);
+                return new IntRangeFilter(columnName, RangeConditionFilter.parseIntFilter(value), QueryConstants.MAX_INT, true, true);
             default:
                 throw new IllegalArgumentException("RangeConditionFilter does not support condition " + condition);
         }
