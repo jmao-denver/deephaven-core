@@ -2111,7 +2111,7 @@ public final class ObjectSegmentedSortedMultiset implements SegmentedSortedMulti
     //endregion
 
     @Override
-    public ObjectChunk<Object, ?> keyChunk() {
+    public WritableObjectChunk<Object, ?> keyChunk() {
         final WritableObjectChunk keyChunk = WritableObjectChunk.makeWritableChunk(intSize());
         fillKeyChunk(keyChunk, 0);
         return keyChunk;
@@ -2139,7 +2139,7 @@ public final class ObjectSegmentedSortedMultiset implements SegmentedSortedMulti
     }
 
     @Override
-    public LongChunk<?> countChunk() {
+    public WritableLongChunk<?> countChunk() {
         final WritableLongChunk countChunk = WritableLongChunk.makeWritableChunk(intSize());
         if (leafCount == 1) {
             countChunk.copyFromTypedArray(directoryCount, 0, 0, size);

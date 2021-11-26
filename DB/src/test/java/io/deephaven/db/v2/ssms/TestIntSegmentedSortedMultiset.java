@@ -286,7 +286,7 @@ public class TestIntSegmentedSortedMultiset extends LiveTableTestCase {
     private void checkSsm(IntSegmentedSortedMultiset ssm, IntChunk<? extends Values> valueChunk, boolean countNull, @NotNull final SsaTestHelpers.TestDescriptor desc) {
         try {
             ssm.validate();
-            final IntChunk<?> keys = ssm.keyChunk();
+            final WritableIntChunk<?> keys = ssm.keyChunk();
             final LongChunk<?> counts = ssm.countChunk();
             int totalSize = 0;
 

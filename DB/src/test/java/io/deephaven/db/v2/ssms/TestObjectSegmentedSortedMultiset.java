@@ -274,7 +274,7 @@ public class TestObjectSegmentedSortedMultiset extends LiveTableTestCase {
     private void checkSsm(ObjectSegmentedSortedMultiset ssm, ObjectChunk<Object, ? extends Values> valueChunk, boolean countNull, @NotNull final SsaTestHelpers.TestDescriptor desc) {
         try {
             ssm.validate();
-            final ObjectChunk<Object, ?> keys = ssm.keyChunk();
+            final WritableObjectChunk<Object, ?> keys = ssm.keyChunk();
             final LongChunk<?> counts = ssm.countChunk();
             int totalSize = 0;
 
