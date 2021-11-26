@@ -286,10 +286,11 @@ public class SyncTableFilter {
     private void doMatch(final int tableIndex, final KeyState state, final long matchValue) {
         final Index.SequentialBuilder matchedBuilder = Index.FACTORY.getSequentialBuilder();
         final Index.SequentialBuilder pendingBuilder = Index.FACTORY.getSequentialBuilder();
-        final WritableLongChunk<Attributes.OrderedKeyIndices> keyIndices =
-                WritableLongChunk.makeWritableChunk(CHUNK_SIZE);
 
-        try (final OrderedKeys.Iterator okit = state.pendingRows.getOrderedKeysIterator();
+
+        try (final WritableLongChunk<Attributes.OrderedKeyIndices> keyIndices =
+                WritableLongChunk.makeWritableChunk(CHUNK_SIZE);
+                final OrderedKeys.Iterator okit = state.pendingRows.getOrderedKeysIterator();
                 final ColumnSource.GetContext getContext = idSources.get(tableIndex).makeGetContext(CHUNK_SIZE)) {
             while (okit.hasMore()) {
                 final OrderedKeys chunkOk = okit.getNextOrderedKeysWithLength(CHUNK_SIZE);
@@ -392,13 +393,14 @@ public class SyncTableFilter {
     }
 
     private void consumeRows(final int tableIndex, final Index index) {
-        // in Treasure the TupleSource will handle chunks better
-        final WritableObjectChunk valuesChunk = WritableObjectChunk.makeWritableChunk(CHUNK_SIZE);
-        final WritableLongChunk<Attributes.Values> idChunk = WritableLongChunk.makeWritableChunk(CHUNK_SIZE);
-        final WritableLongChunk<Attributes.OrderedKeyIndices> keyIndicesChunk =
-                WritableLongChunk.makeWritableChunk(CHUNK_SIZE);
         final ColumnSource<Long> idSource = idSources.get(tableIndex);
-        try (final OrderedKeys.Iterator okIt = index.getOrderedKeysIterator();
+        // TODO(XXX): migrate to using TupleSource.fillChunk
+        try (final WritableObjectChunk<Object, Attributes.Any> valuesChunk =
+                WritableObjectChunk.makeWritableChunk(CHUNK_SIZE);
+                final WritableLongChunk<Attributes.Values> idChunk = WritableLongChunk.makeWritableChunk(CHUNK_SIZE);
+                final WritableLongChunk<Attributes.OrderedKeyIndices> keyIndicesChunk =
+                        WritableLongChunk.makeWritableChunk(CHUNK_SIZE);
+                final OrderedKeys.Iterator okIt = index.getOrderedKeysIterator();
                 final ColumnSource.FillContext fillContext = idSource.makeFillContext(CHUNK_SIZE)) {
             while (okIt.hasMore()) {
                 final OrderedKeys chunkOk = okIt.getNextOrderedKeysWithLength(CHUNK_SIZE);
@@ -406,14 +408,12 @@ public class SyncTableFilter {
                 valuesChunk.setSize(0);
                 chunkOk.forEachLong(idx -> {
                     Object tuple = keySources[tableIndex].createTuple(idx);
-                    // noinspection unchecked
                     valuesChunk.add(tuple);
                     return true;
                 });
                 idSource.fillChunk(fillContext, idChunk, chunkOk);
 
-                // TODO: when we are in Treasure, we should sort this so we do not need to repeatedly look things up
-                // TODO: In Treasure we can also use current factories for our index
+                // TODO(XXX): we should sort this so we do not need to repeatedly look things up
                 for (int ii = 0; ii < idChunk.size(); ++ii) {
                     final Object key = valuesChunk.get(ii);
                     pendingKeys.add(key);

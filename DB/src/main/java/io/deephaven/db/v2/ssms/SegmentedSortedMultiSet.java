@@ -5,6 +5,7 @@ import io.deephaven.db.util.LongSizedDataStructure;
 import io.deephaven.db.v2.sources.chunk.Attributes.ChunkLengths;
 import io.deephaven.db.v2.sources.chunk.Attributes.Values;
 import io.deephaven.db.v2.sources.chunk.*;
+import io.deephaven.util.annotations.VisibleForTesting;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -77,16 +78,14 @@ public interface SegmentedSortedMultiSet<T> extends LongSizedDataStructure {
             WritableIntChunk<ChunkLengths> lengths);
 
     @NotNull
-    default Chunk<?> keyChunk() {
-        return null;
-    }
+    @VisibleForTesting
+    WritableChunk<?> keyChunk();
 
     default void fillKeyChunk(WritableChunk<?> keyChunk, int offset) {}
 
     @NotNull
-    default LongChunk<?> countChunk() {
-        return null;
-    }
+    @VisibleForTesting
+    WritableLongChunk<?> countChunk();
 
     class RemoveContext {
         RemoveContext(int leafSize) {

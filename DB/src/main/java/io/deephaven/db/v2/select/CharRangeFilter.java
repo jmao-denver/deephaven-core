@@ -1,10 +1,8 @@
 package io.deephaven.db.v2.select;
 
-import io.deephaven.base.verify.Require;
 import io.deephaven.db.tables.ColumnDefinition;
 import io.deephaven.db.tables.TableDefinition;
 import io.deephaven.db.util.DhCharComparisons;
-import io.deephaven.db.util.DhLongComparisons;
 import io.deephaven.db.v2.select.chunkfilters.CharRangeComparator;
 import io.deephaven.db.v2.sources.ColumnSource;
 import io.deephaven.db.v2.utils.Index;
