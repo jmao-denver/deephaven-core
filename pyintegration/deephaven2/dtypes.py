@@ -6,7 +6,7 @@
 Each data type is represented by a DType class which supports creating arrays of the same type and more.
 """
 from enum import Enum
-from typing import Iterable, Any, List, Tuple
+from typing import Iterable, Any, List, Tuple, Sequence
 
 import jpy
 import numpy as np
@@ -18,7 +18,7 @@ _JQstType = jpy.get_type("io.deephaven.qst.type.Type")
 _JTableTools = jpy.get_type("io.deephaven.db.tables.utils.TableTools")
 
 # region Deephaven Special Null values for primitive types
-# contains appropriate values for bidirectional conversion of null values
+# contains appropriate seq for bidirectional conversion of null seq
 NULL_CHAR = 65535  #: Null value for char.
 NULL_FLOAT = float.fromhex('-0x1.fffffep127')  #: Null value for float.
 NULL_DOUBLE = float.fromhex('-0x1.fffffffffffffP+1023')  #: Null value for double.
@@ -71,11 +71,11 @@ class DType:
         except Exception as e:
             raise DHError("failed to create a Java array.") from e
 
-    def array_of(self, values: Iterable):
-        """ Create a Java array of the same data type populated with values from a Python iterable.
+    def array_of(self, seq: Sequence):
+        """ Create a Java array of the same data type populated with values from a Python sequence.
 
         Args:
-            values: a Python iterable of compatible data type
+            seq: a Python sequence of compatible data type
 
         Returns:
             a Java array
@@ -84,12 +84,9 @@ class DType:
             DHError
         """
         try:
-            return jpy.array(self._j_name, values)
+            return jpy.array(self._j_name, seq)
         except Exception as e:
             raise DHError("failed to create a Java array.") from e
-
-    def array_from(self, *values):
-        ...
 
 
 class IntegerDType(DType):
@@ -100,29 +97,37 @@ class IntegerDType(DType):
         self.np_types = np_dtypes
         self.null_value = null_value
 
-    def array_from(self, *values):
+    def array_of(self, seq: Sequence):
+        """ Create a Java array of the same data integer type populated with values from a Python sequence.
+
+        Args:
+            seq: a Python sequence of compatible data type, can be a np array or Pandas series
+
+        Returns:
+            a Java array
+
+        Raises:
+            DHError
+        """
         try:
-            if not values:
-                return self.array(0)
-            if len(values) == 1 and isinstance(values[0], np.ndarray):
-                v = values[0]
-                if v.dtype in self.np_types:
-                    return self.array_of(v)
-                elif np.issubdtype(v.dtype, np.integer):
-                    return self.array_of(v.astype(self.np_types[0]))
-                elif np.issubdtype(v.dtype, np.floating):
-                    np_bool_array = np.isnan(values[0])
-                    np_dtype_array = v.astype(self.np_types[0])
-                    np_dtype_array[np_bool_array] = self.null_value
-                    return self.array_of(np_dtype_array)
+            if isinstance(seq, np.ndarray):
+                if seq.dtype in self.np_types:
+                    return super().array_of(seq)
+                elif np.issubdtype(seq.dtype, np.integer):
+                    return super().array_of(seq.astype(self.np_types[0]))
+                elif np.issubdtype(seq.dtype, np.floating):
+                    nan_arr = np.isnan(seq)
+                    arr = seq.astype(self.np_types[0])
+                    arr[nan_arr] = self.null_value
+                    return super().array_of(arr)
                 else:
-                    raise ValueError(f"Incompatible np dtype ({v.dtype}) for {self.name} array")
-            elif len(values) == 1 and isinstance(values[0], pd.Series):
-                return self.array_from(values[0].values)
+                    raise ValueError(f"Incompatible np dtype ({seq.dtype}) for {self._j_name} array")
+            elif isinstance(seq, pd.Series):
+                return self.array_of(seq.values)
             else:
-                return self.array_of(*values)
+                return super().array_of(seq)
         except Exception as e:
-            raise DHError(e, "failed to create a Java integer array.") from e
+            raise DHError(e, f"failed to create a Java {self._j_name} array.") from e
 
 
 class FloatingDType(DType):
@@ -133,8 +138,40 @@ class FloatingDType(DType):
         self.np_types = np_dtypes
         self.null_value = null_value
 
-    def array_from(self, *values):
-        """TODO"""
+    def array_of(self, seq: Sequence):
+        """ Create a Java array of the same data floating type populated with values from a Python sequence.
+
+        Args:
+            seq: a Python sequence of compatible data type, can be a np array or Pandas series
+
+        Returns:
+            a Java array
+
+        Raises:
+            DHError
+        """
+        try:
+            if isinstance(seq, np.ndarray):
+                if seq.dtype in self.np_types:
+                    nan_arr = np.isnan(seq)
+                    arr = seq.copy()
+                    arr[nan_arr] = self.null_value
+                    return super().array_of(arr)
+                elif np.issubdtype(seq.dtype, np.floating):
+                    nan_arr = np.isnan(seq)
+                    arr = seq.astype(self.np_types[0])
+                    arr[nan_arr] = self.null_value
+                    return super().array_of(arr)
+                elif np.issubdtype(seq.dtype, np.integer):
+                    return super().array_of(seq.astype(self.np_types[0]))
+                else:
+                    raise ValueError(f"Incompatible np dtype ({seq.dtype}) for {self._j_name} array")
+            elif isinstance(seq, pd.Series):
+                return self.array_of(seq.values)
+            else:
+                return super().array_of(seq)
+        except Exception as e:
+            raise DHError(e, f"failed to create a Java {self._j_name} array.") from e
 
 
 class CharDType(DType):
@@ -145,8 +182,50 @@ class CharDType(DType):
         self.np_types = np_dtypes
         self.null_value = null_value
 
-    def array_from(self, *values):
-        """TODO"""
+    def array_of(self, seq):
+
+        def to_char(el):
+            if el is None:
+                return NULL_CHAR
+            if isinstance(el, int):
+                return el
+            if isinstance(el, str):
+                if len(el) < 1:
+                    return NULL_CHAR
+                return ord(el[0])
+            try:
+                return int(el)
+            except ValueError:
+                return NULL_CHAR
+
+        try:
+            if isinstance(seq, str):
+                return super().array_of([ord(c) for c in seq])
+            elif isinstance(seq, np.ndarray):
+                if seq.dtype == np.uint16:
+                    return super().array_of(seq)
+                elif np.issubdtype(seq.dtype, np.integer):
+                    return super().array_of(seq.astype(np.uint16))
+                elif seq.dtype == np.dtype('U1') and seq.dtype.name in ['unicode32', 'str32', 'string32',
+                                                                        'bytes32']:
+                    arr = np.copy(seq)
+                    arr.dtype = np.uint32
+                    return super().array_of(arr.astype(np.uint16))
+                elif seq.dtype == np.dtype('S1') and seq.dtype.name in ['str8', 'string8', 'bytes8']:
+                    arr = np.copy(seq)
+                    arr.dtype = np.uint8
+                    return super().array_of(arr.astype(np.uint16))
+                elif seq.dtype == np.object:
+                    return super().array_of(np.array([to_char(el) for el in seq], dtype=np.uint16))
+                else:
+                    # do our best
+                    raise ValueError(f"Passed in a numpy array, expect integer dtype or one char string dtype, and got {seq.dtype}")
+            elif isinstance(seq, pd.Series):
+                return self.array_of(seq.values)
+            else:
+                return self.array_of(np.asarray(seq))
+        except Exception as e:
+            raise DHError(e, f"failed to create a Java {self._j_name} array.") from e
 
 
 # region convenience enum and module level type aliases

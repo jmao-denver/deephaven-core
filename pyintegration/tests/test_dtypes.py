@@ -50,30 +50,63 @@ class DTypesTestCase(BaseTestCase):
         np_array = numpy.frombuffer(j_array, numpy.int32)
         self.assertTrue((np_array == numpy.array([0, 1, 2, 3, 4], dtype=numpy.int32)).all())
 
-    def test_integer_array_from(self):
-        np_array = np.array([np.log(-1.), 1., np.log(0)])
-        j_array = dtypes.int64.array_from(np_array)
-        self.assertIsNotNone(j_array)
+        j_array = dtypes.int_.array_of([0, 1, 2, 3, 4])
+        np_array = numpy.frombuffer(j_array, numpy.int32)
+        self.assertTrue((np_array == numpy.array([0, 1, 2, 3, 4], dtype=numpy.int32)).all())
 
-        j_array = dtypes.int64.array_from(np_array)
-        for x in j_array:
-            print(x)
-        self.assertIsNotNone(j_array)
+    def test_integer_array_of(self):
+        np_array = np.array([float('nan'), 1.123, float('inf')])
 
-        j_array = dtypes.short.array_from(np_array)
-        for x in j_array:
-            print(x)
-        self.assertIsNotNone(j_array)
+        expected = [dtypes.NULL_LONG, 1, dtypes.NULL_LONG]
+        j_array = dtypes.int64.array_of(np_array)
+        py_array = [x for x in j_array]
+        self.assertEqual(expected, py_array)
 
         pd_series = pd.Series(np_array)
-        j_array = dtypes.int64.array_from(pd_series)
-        self.assertIsNotNone(j_array)
+        j_array = dtypes.int64.array_of(pd_series)
+        py_array = [x for x in j_array]
+        self.assertEqual(expected, py_array)
 
-        j_array = dtypes.int64.array_from()
-        self.assertIsNotNone(j_array)
+        expected = [dtypes.NULL_SHORT, 1, 0]
+        j_array = dtypes.short.array_of(np_array)
+        py_array = [x for x in j_array]
+        self.assertEqual(expected, py_array)
 
-        j_array = dtypes.int64.array_from([1.1, 2.2, 3.3])
-        self.assertIsNotNone(j_array)
+        expected = [1, 2, 3]
+        j_array = dtypes.int64.array_of([1.1, 2.2, 3.3])
+        py_array = [x for x in j_array]
+        self.assertEqual(expected, py_array)
+
+    def test_floating_array_of(self):
+        np_array = np.array([float('nan'), 1.1, float('inf')])
+
+        expected = [dtypes.NULL_DOUBLE, 1.1, float('inf')]
+        j_array = dtypes.float64.array_of(np_array)
+        py_array = [x for x in j_array]
+        self.assertEqual(expected, py_array)
+
+        pd_series = pd.Series(np_array)
+        j_array = dtypes.double.array_of(pd_series)
+        py_array = [x for x in j_array]
+        self.assertEqual(expected, py_array)
+
+        expected = [dtypes.NULL_FLOAT, 1.1, float('inf')]
+        j_array = dtypes.float32.array_of(np_array)
+        py_array = [x for x in j_array]
+        for i in range(3):
+            self.assertAlmostEqual(expected[i], py_array[i])
+
+        expected = [1, 2, 3]
+        np_array = np.array(expected)
+        j_array = dtypes.float64.array_of(np_array)
+        py_array = [x for x in j_array]
+        for i in range(3):
+            self.assertAlmostEqual(expected[i], py_array[i])
+
+        j_array = dtypes.float64.array_of(expected)
+        py_array = [x for x in j_array]
+        for i in range(3):
+            self.assertAlmostEqual(expected[i], py_array[i])
 
 
 if __name__ == '__main__':
