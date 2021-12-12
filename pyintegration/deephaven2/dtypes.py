@@ -7,11 +7,7 @@ Each data type is represented by a DType class which supports creating arrays of
 """
 from __future__ import annotations
 
-from typing import Iterable, Any, Tuple, Sequence, Callable
-
-import numpy as np
-import pandas as pd
-import jpy
+from typing import Iterable, Any, Sequence, Callable
 
 from deephaven2 import DHError
 from deephaven2.constants import *
@@ -130,13 +126,114 @@ float64 = double
 string = DType(j_name="java.lang.String", qst_type=_JQstType.stringType())
 BigDecimal = DType(j_name="java.math.BigDecimal")
 StringSet = DType(j_name="io.deephaven.stringset.StringSet")
-DateTime = DType(j_name="io.deephaven.time.DateTime")
-Period = DType(j_name="io.deephaven.time.Period")
 PyObject = DType(j_name="org.jpy.PyObject")
 JObject = DType(j_name="java.lang.Object")
+_DHDateTime = DType(j_name="io.deephaven.time.DateTime")
+_DHPeriod = DType(j_name="io.deephaven.time.Period")
 
+
+class DateTime:
+    is_primitive = False
+    j_type = _DHDateTime.j_type
+    qst_type = _DHDateTime.qst_type
+
+    def __init__(self, v: Any):
+        if v is None:
+            self.j_datetime = None
+        else:
+            if isinstance(v, _DHDateTime.j_type):
+                self.j_datetime = v
+            else:
+                # TODO conversion support from Python built-in datetime, string datetime representation etc.
+                self.j_datetime = _DHDateTime(v)
+
+    def __eq__(self, other):
+        if other is None:
+            if self.j_datetime is None:
+                return True
+            else:
+                return False
+
+        if isinstance(other, DateTime):
+            if self.j_datetime is not None:
+                return self.j_datetime.equals(other.j_datetime)
+            elif other.j_datetime is None:
+                return True
+
+        return False
+
+    def __repr__(self):
+        return str(self.j_datetime)
+
+    @staticmethod
+    def now():
+        return DateTime(_DHDateTime.j_type.now())
+
+    @staticmethod
+    def array(size: int):
+        """ Creates a Java array of the Deephaven DateTime data type of the specified size.
+
+        Args:
+            size (int): the size of the array
+
+        Returns:
+            a Java array
+
+        Raises:
+            DHError
+        """
+        return _DHDateTime.array(size)
+
+    @staticmethod
+    def array_from(seq: Sequence, remap: Callable[[Any], Any] = None):
+        """ Creates a Java array of Deephaven DateTime instances from a sequence.
+
+        Args:
+            seq: a sequence of compatible data, e.g. list, tuple, numpy array, Pandas series, etc.
+            remap (optional): a callable that takes one value and maps it to another, for handling the translation of
+                special DH values such as NULL_INT, NAN_INT between Python and the DH engine
+
+        Returns:
+            a Java array
+
+        Raises:
+            DHError
+        """
+
+        new_seq = []
+        for v in seq:
+            if v is None:
+                new_seq.append(None)
+            elif isinstance(v, DateTime):
+                new_seq.append(v.j_datetime)
+            elif isinstance(v, _DHDateTime.j_type):
+                new_seq.append(v)
+            else:
+                raise DHError(message="Not a valid datetime")
+
+        return _DHDateTime.array_from(seq=new_seq, remap=remap)
+
+
+class Period:
+    is_primitive = False
+    j_type = _DHPeriod.j_type
+    qst_type = _DHPeriod.qst_type
+
+    def __init__(self, v: Any):
+        if v is None:
+            self.j_period = None
+        else:
+            if isinstance(v, _DHPeriod.j_type):
+                self.j_period = v
+            else:
+                # TODO conversion support from Python built-in datetime, string datetime representation etc.
+                self.j_period = _DHPeriod(v)
+
+    def __repr__(self):
+        return str(self.j_period)
 
 # endregion
+
 
 def j_array_list(values: Iterable):
     j_list = jpy.get_type("java.util.ArrayList")(len(values))

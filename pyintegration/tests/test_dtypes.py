@@ -172,10 +172,11 @@ class DTypesTestCase(BaseTestCase):
 
     def test_datetime(self):
         dt1 = dtypes.DateTime(round(time.time()))
-        dt2 = dtypes.DateTime.j_type.now()
+        dt2 = dtypes.DateTime.now()
         values = [dt1, dt2, None]
         j_array = dtypes.DateTime.array_from(values)
-        self.assertEqual(values, [dt for dt in j_array])
+        p_list = [dtypes.DateTime(dt) for dt in j_array]
+        self.assertTrue(all(x == y for x, y in zip(p_list, values)))
 
 
 if __name__ == '__main__':
