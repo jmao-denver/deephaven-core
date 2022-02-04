@@ -596,14 +596,6 @@ public class GoogleDeploymentManager implements DeploymentManager {
                 cmds.add("--image");
                 cmds.add(SNAPSHOT_NAME + "-controller");
             } else {
-                cmds.add("--image");
-                if (isBase) {
-                    cmds.add("ubuntu-2004-focal-v20210129");
-                    cmds.add("--image-project");
-                    cmds.add("ubuntu-os-cloud");
-                } else {
-                    cmds.add(getBaseImageName());
-                }
                 addImageFlag(cmds, isBase);
                 final String scriptName = "prepare-controller.sh";
                 addStartupScript(cmds, scriptName);

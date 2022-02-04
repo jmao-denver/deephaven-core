@@ -92,6 +92,9 @@ public class ImageDeployer {
                 manager.waitForSsh(base, -1, TimeUnit.MINUTES.toMillis(15));
                 // wait until we can get a finish-setup.sh "we are done" log messages.
                 ctrl.waitUntilHealthy(base);
+                // must delete the vm-startup.log link, otherwise a later worker or controller image might accidentally think it is already done setup!
+                // basically, .waitUntilHealthy polls this log for a finished message, so we do NOT want that in the base image (it will cause race conditions).
+                Execute.ssh(false, base.getDomainName(), "sudo rm /var/log/vm-startup.log");
                 // deploy the base image.
                 finishDeploy("Base", base, manager);
             }

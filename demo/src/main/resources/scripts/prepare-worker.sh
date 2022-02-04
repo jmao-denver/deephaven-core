@@ -62,6 +62,8 @@ services:
     # image: ${REPO:-ghcr.io/deephaven}/examples
     # this one isn't deployed to the gcloud docker repo
     image: ghcr.io/deephaven/examples
+    # needed to access outside network (github) to download files.
+    network_mode: "host"
     volumes:
       - ./data:/data
     command: initialize
