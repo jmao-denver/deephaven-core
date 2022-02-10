@@ -96,7 +96,7 @@ public class MachinePool {
                     // here is where we should try to claim a candidate through a contention-breaking set-label operation...
                     // we don't _really_ want that, though, since there is code that calls us which does not want to publicly reserve a machine.
 
-                    LOG.warn("Sending user a machine we must turn on: " + candidate);
+                    LOG.warn("Sending " + (reserve ? "user" : "back" ) + " a machine we must turn on: " + candidate);
                     return Optional.of(candidate);
                 }
             }

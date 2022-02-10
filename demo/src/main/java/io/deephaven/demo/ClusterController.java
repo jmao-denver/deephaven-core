@@ -683,6 +683,11 @@ public class ClusterController {
             LOG.error("UNEXPECTED MACHINE METADATA FORMAT: " + line);
             return null;
         }
+        // exit asap if version is not valid.
+        if (!isValidVersion(bits[getIndexVersion()])) {
+            LOG.debugf("Skipping invalid version; our version %s, machine version: %s, all data: %s", VERSION_MANGLE, bits[getIndexVersion()], line);
+            return null;
+        }
         final String ipAddr, ipName;
         if (bits[getIndexIp()].length() > 0) {
             ipAddr = bits[getIndexIp()].trim();
@@ -757,10 +762,11 @@ public class ClusterController {
             }
             machines.expireInTimeString(mach, bits[getIndexLease()]);
         } else {
-            // this machine does not have a lease, make sure it is marked as not-in-use!
-            // this is an unfortunate side effect of the way we scale up machines;
-            // we'll mark them in-use in-memory, so we but don't tag the instances
-            mach.setInUse(false);
+            // this machine may or may not have a lease label in gcloud metadata, but it might soon!
+            // check if we know this machine was recently reserved before we mark it as not-in-use!
+            if (mach.getLastOnline() > 0 && System.currentTimeMillis() - mach.getLastOnline() > getSessionTtl()) {
+                mach.setInUse(false);
+            }
         }
         return mach;
     }
@@ -780,7 +786,11 @@ public class ClusterController {
     }
 
     private boolean isValidVersion(final Machine machine) {
-        return machine.getVersion() != null && VERSION_MANGLE.equals(machine.getVersion());
+        return isValidVersion(machine.getVersion());
+    }
+
+    private boolean isValidVersion(String version) {
+        return VERSION_MANGLE.equals(version);
     }
 
     private String getMachineFormatFlag() {

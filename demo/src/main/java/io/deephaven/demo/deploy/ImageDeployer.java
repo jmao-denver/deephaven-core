@@ -156,7 +156,11 @@ public class ImageDeployer {
         finishDeploy("Controller", controller, manager);
 
         LOG.info("Creating new controller-" + VERSION_MANGLE + " box");
-        Machine newCtrl = ctrl.findMachine("controller-" + VERSION_MANGLE, true, true);
+        final String controllerHost = "controller-" + VERSION_MANGLE;
+        if (force) {
+            manager.deleteMachine(controllerHost);
+        }
+        Machine newCtrl = ctrl.findMachine(controllerHost, true, true);
         if (newCtrl.getIp() == null) {
             newCtrl.setIp(ctrl.requestIp());
         }

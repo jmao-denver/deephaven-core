@@ -183,6 +183,7 @@ public class GoogleDeploymentManager implements DeploymentManager {
                 String ip = getGcloudIp(node);
                 IpMapping ipMap = ips.findByIp(ip);
                 node.setIp(ipMap);
+                LOG.infof("Looked up ip mapping %s for machine %s with gcloud ip %s", ipMap, node, ip);
             } catch(IOException | InterruptedException ignored){}
         }
 
@@ -978,9 +979,14 @@ public class GoogleDeploymentManager implements DeploymentManager {
                     }
                     DomainMapping domain = domains.getOrCreate(simpleName, domainRoot);
                     pending.incrementAndGet();
+
                     ClusterController.setTimer("Find address for " + items[2], ()->{
                         try {
+                            boolean hadIp = ips.hasIp(items[2]);
                             final IpMapping ownerIp = ips.findByIp(items[2]);
+                            if (!hadIp) {
+                                LOG.infof("Looked up ownerIp %s for domain %s / ip %s", ownerIp, domain, items[2]);
+                            }
                             if (ownerIp == null) {
                                 invalid.put(domain, items[2]);
                             } else {

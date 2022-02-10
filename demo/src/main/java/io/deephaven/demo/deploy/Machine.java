@@ -139,7 +139,7 @@ public class Machine {
     @Override
     public String toString() {
         return "Machine{" +
-                getHost() +" : " +
+                getHost() + " - " + getVersion() + " : " +
                 getDomainName() + " @ " + ip +
                 '}';
     }
@@ -151,6 +151,9 @@ public class Machine {
     public void setInUse(final boolean inUse) {
         if (!this.inUse && inUse) {
             lastOnline = System.currentTimeMillis();
+        }
+        if (this.inUse != inUse) {
+            LOG.infof( new Throwable("Changing inUse"), "Changing machine %s inUse from %s to %s", this, this.inUse, inUse);
         }
         this.inUse = inUse;
     }

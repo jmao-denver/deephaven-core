@@ -149,6 +149,9 @@ public class IpPool {
         return ip;
     }
 
+    public boolean hasIp(final String ipAddr) {
+        return allIps.containsKey(ipAddr);
+    }
     public IpMapping findByIp(final String ipAddr) {
         IpMapping ip = allIps.get(ipAddr);
         if (ip == null) {
@@ -164,7 +167,10 @@ public class IpPool {
                 if (ipLookup.code == 0) {
                     LOG.infof("FOUND MISSING IP ADDRESS %s from %s", ipLookup, ipAddr);
                     String name = ipLookup.out.trim();
-                    return updateOrCreate(name, ipAddr);
+                    if (name.isEmpty()) {
+                    } else {
+                        return updateOrCreate(name, ipAddr);
+                    }
                 }
             } catch (IOException | InterruptedException e) {
                 LOG.errorf("Could not lookup ip %s");
