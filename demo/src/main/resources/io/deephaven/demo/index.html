@@ -344,7 +344,7 @@
         request.send(null);
       }
       function goToWorker() {
-        window.location.href = uri + ( path === '/' ? "/ide" : "/ide/" + path );
+        window.location.href = uri + ( path === '/' ? "/ide" : "/ide" + path );
       }
 
       getStatus();

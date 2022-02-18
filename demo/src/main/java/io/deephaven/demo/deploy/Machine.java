@@ -19,7 +19,7 @@ import static io.deephaven.demo.NameConstants.*;
 public class Machine {
 
     private static final Logger LOG = Logger.getLogger(Machine.class);
-    static boolean useImages = true;
+    static boolean useImages = !"false".equals(System.getProperty("useImages"));
 
     private String host;
     private IpMapping ip;

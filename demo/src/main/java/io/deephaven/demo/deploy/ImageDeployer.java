@@ -47,11 +47,15 @@ public class ImageDeployer {
         LOG.infof("Creating new worker %s", workerName);
         final String localDir = System.getProperty("java.io.tmpdir", "/tmp") + "/dh_deploy_" + workerName;
         GoogleDeploymentManager manager = new GoogleDeploymentManager(localDir);
+        if ("true".equals(System.getProperty("rebuildWorker"))) {
+            manager.deleteMachine(workerName);
+        }
         ClusterController ctrl = new ClusterController(manager, false, true);
         final Machine machine = ctrl.requestMachine(workerName, true, false);
         manager.waitForSsh(machine);
         ctrl.waitUntilHealthy(machine);
         LOG.infof("Your machine %s is healthy!", machine.getDomainName());
+        LOG.infof("Visit it on the web: https://%s", machine.getDomainName());
     }
 
     private void deploy(final String version, String machinePrefix) throws IOException, InterruptedException {

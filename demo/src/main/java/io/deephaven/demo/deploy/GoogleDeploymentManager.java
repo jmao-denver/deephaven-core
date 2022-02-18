@@ -617,6 +617,7 @@ public class GoogleDeploymentManager implements DeploymentManager {
 //                cmds.add("--metadata=startup-script=while ! curl -k https://localhost:10000/health &> /dev/null; do echo 'Waiting for dh stack to come up'; done ; sudo iptables -A PREROUTING -t nat -p tcp --dport 443 -j REDIRECT --to-port 10000 ; sudo iptables -A PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-port 10000");
             } else {
                 // can't setup a worker w/o extended permissions. This should only be used for testing new worker scripts
+                // TODO: have an "extended worker" service account that is able to pull docker images, but not much else...
                 cmds.add("dh-controller@" + getGoogleProject() + ".iam.gserviceaccount.com");
                 addImageFlag(cmds, isBase);
                 cmds.add("--scopes");
@@ -1112,7 +1113,7 @@ public class GoogleDeploymentManager implements DeploymentManager {
     }
 
     public String getBaseImageName() {
-        return baseImageName == null ? "base-" + (VERSION_MANGLE.replaceFirst("[-][0-9]+$", "")) : baseImageName;
+        return baseImageName == null ? "base-" + (VERSION_MANGLE.replaceFirst("^([0-9]+[-][0-9]+).*$", "$1")) : baseImageName;
     }
 
     public void setBaseImageName(final String baseImageName) {

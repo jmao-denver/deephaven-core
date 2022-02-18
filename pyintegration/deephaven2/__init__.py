@@ -7,7 +7,7 @@ unlocks the unique and tremendous power of Deephaven to the Python community.
 """
 import jpy
 
-__version__ = "0.8.11"
+__version__ = "0.8.12"
 
 if not jpy.has_jvm():
     from ._utils.bootstrap import build_py_session
