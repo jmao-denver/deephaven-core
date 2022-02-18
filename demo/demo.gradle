@@ -193,12 +193,8 @@ def tagDemoWorkerTask = tasks.register('tagDemoWorker', DockerTagImage) {
         def demoGrpcApi = project(':docker-server')
         println demoGrpcApi.tasks.names.join("\n")
         // make sure the images we need are built before we run
-        t.dependsOn demoGrpcApi.tasks.findByName('buildDocker-server'),
-                    demoGrpcApi.tasks.findByName('buildDocker-server-tensorflow'),
-                    demoGrpcApi.tasks.findByName('buildDocker-server-sklearn'),
-                    demoGrpcApi.tasks.findByName('buildDocker-server-nltk'),
-                    demoGrpcApi.tasks.findByName('buildDocker-server-pytorch')
-        t.imageId.set 'deephaven/server-tensorflow:local-build' // TODO: something that puts the venvs created from all of the above into one image...
+        t.dependsOn demoGrpcApi.tasks.findByName('buildDocker-server-all-ai')
+        t.imageId.set 'deephaven/server-all-ai:local-build' // TODO: something that puts the venvs created from all of the above into one image...
         t.repository.set grpcApiRepository
         t.tag.set grpcApiTag
         t.force.set true
