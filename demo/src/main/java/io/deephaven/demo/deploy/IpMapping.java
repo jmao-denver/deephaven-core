@@ -1,5 +1,6 @@
 package io.deephaven.demo.deploy;
 
+import io.deephaven.demo.NameConstants;
 import io.deephaven.demo.NameGen;
 import io.smallrye.common.constraint.NotNull;
 import io.smallrye.common.constraint.Nullable;
@@ -129,6 +130,10 @@ public class IpMapping implements Comparable<IpMapping> {
                     }
                     currentDomain = itr.next();
                     itr.remove();
+                    if (NameConstants.DOMAIN.equals(currentDomain.getDomainQualified())) {
+                        new Exception("GOT INCORRECTLY ASSIGNED DOMAIN ROOT AS A QUALIFIED DOMAIN NAME").printStackTrace();
+                        currentDomain = null;
+                    }
                 }
             }
         }

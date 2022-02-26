@@ -148,7 +148,6 @@ public class DhDemoServer implements QuarkusApplication {
                             "Disallow: /");
         });
         router.get().handler(req -> {
-
             // for now, we are temporarily skipping ssl...
 //            if (!req.request().isSSL()) {
 //                System.out.println("Redirecting non-ssl request " + req.normalizedPath());

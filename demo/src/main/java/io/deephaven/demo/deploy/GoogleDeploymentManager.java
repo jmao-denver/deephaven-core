@@ -129,7 +129,16 @@ public class GoogleDeploymentManager implements DeploymentManager {
         dns.tx(tx -> {
             nodes.collect(Collectors.toList()).forEach(node -> {
                 IpMapping nodeIp = node.getIp();
-                final DomainMapping mapping = node.domain() == null ? node.useNewDomain(ctrl) : node.domain();
+                DomainMapping oldDomain = node.domain();
+                final DomainMapping oldIpDomain = nodeIp.getCurrentDomain();
+                DomainMapping mapping = oldDomain == null ? node.useNewDomain(ctrl) : oldDomain;
+                while (DOMAIN.equals(node.domain().getDomainQualified())) {
+                    new Exception("INCORRECTLY ASSIGNED DOMAIN ROOT TO NODE " + node +
+                            "\nOld domain: " + oldDomain +
+                            "\nOld IP domain: " + oldIpDomain).printStackTrace();
+                    node.getIp().setDomain(null);
+                    mapping = node.useNewDomain(ctrl);
+                }
                 LOG.infof("Ensuring node %s has domain name %s", node.getHost(), node.domain());
                 try {
                     String resolved = getDnsIp(node);

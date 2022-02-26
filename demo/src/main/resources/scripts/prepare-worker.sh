@@ -86,6 +86,35 @@ admin:
       port_value: 9090
 static_resources:
   listeners:
+    - name: http_redirect
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 10001
+      filter_chains:
+        - filters:
+            - name: envoy.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                access_log:
+                  - name: envoy.access_loggers.file
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
+                      path: "/dev/stdout"
+                codec_type: AUTO
+                stat_prefix: ingress_https
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: reverse_proxy
+                      domains: ["*"]
+                      routes:
+                        - match: { prefix: "/" }
+                          redirect:
+                            path_redirect: "/"
+                            https_redirect: true
+                http_filters:
+                  - name: envoy.filters.http.router
     - name: listener_0
       address:
         socket_address:
