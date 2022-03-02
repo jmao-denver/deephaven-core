@@ -17,7 +17,7 @@ Start by importing some requisite packages. There is documentation on [installin
 [aggBy](https://deephaven.io/core/docs/reference/table-operations/group-and-aggregate/aggBy/), [emptyTable](https://deephaven.io/core/docs/how-to-guides/empty-table/#related-documentation), and [merge](https://deephaven.io/core/docs/how-to-guides/merge-tables/#merge-tables).
 
 ```python
-from deephaven import ConsumeKafka as ck, Aggregation as agg, combo_agg
+from deephaven import ConsumeKafka as ck, Aggregation as agg, as_list
 from deephaven.TableTools import emptyTable, merge
 ```
 
@@ -100,7 +100,7 @@ Define a [table aggregation function](https://deephaven.io/core/docs/reference/t
 
 ```python
 def trades_agg(table):
-    agg_list = combo_agg([
+    agg_list = as_list([
         agg.AggCount("Trade_Count"),
         agg.AggSum("Total_Size = Size"),
     ])
