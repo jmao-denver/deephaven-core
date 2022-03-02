@@ -106,8 +106,8 @@ def table_to_numpy_integer(rows, columns):
     return np.squeeze(gather.table_to_numpy_2d(rows, columns, dtype = int))
 
 # A function to scatter integer model predictions back into a table
-def numpy_to_table_integer(predictions, index):
-    return int(data[idx])
+def numpy_to_table_integer(data, index):
+    return int(data[index])
 ```
 \
 \
@@ -117,7 +117,7 @@ With that done, it's time to put everything together.  Let's start by training t
 learn.learn(
     table = iris_train,
     model_func = train_model,
-    inputs = [learn.Input("SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_numpy_double), learn.Input("Class", table_to_numpy_integer)],
+    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_numpy_double), learn.Input("Class", table_to_numpy_integer)],
     outputs = None,
     batch_size = iris_train.intSize()
 )
@@ -133,6 +133,7 @@ iris_test_predictions = learn.learn(
     inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_numpy_double)],
     outputs = [learn.Output("PredictedClass", numpy_to_table_integer, "int")],
     batch_size = iris_test.intSize()
+)
 ```
 \
 \
@@ -176,7 +177,7 @@ Now we've got some faux live incoming measurements.  We can just use the model w
 ```python
 iris_classifications_live = learn.learn(
     table = live_iris,
-    model = use_trained_model,
+    model_func = use_trained_model,
     inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_numpy_double)],
     outputs = [learn.Output("PredictedClass", numpy_to_table_integer, "int")],
     batch_size = 5

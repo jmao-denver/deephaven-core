@@ -6,7 +6,7 @@ NumPy is a numerical computing library for Python that is widely used by data sc
 
 Deephaven is a real-time, time-series, column-oriented data engine with relational database features.  Its Python API enables users to interact with table data using any Python module of their choice.  Given NumPy's popularity and capabilities, it makes perfect sense to pair it with Deephaven and the learn module.  The learn module provides efficient data transfer to and from Deephaven tables and NumPy arrays.  So how can you use these two in tandem to bring solutions to fruition faster and more efficiently than ever before?  In this demo notebook, we will show you how you can use these two to do some interesting analysis on both static an real-time data.
 \
-\
+
 ## NumPy ndarrays
 
 NumPy is used to create N-dimensional arrays through its `ndarray` object.  To create one, use the `array` method.
@@ -86,12 +86,12 @@ def generate_noisy_signal(x):
     return 3.5 * np.sin(x) + 1.5 * np.sin(2.5 * x) + 0.75 * np.sin(3.5 * x) + np.random.normal()
 
 data_table = emptyTable(1000).update(
-    "X = 0.01 * i",
+    "X = 0.01 * (int)i",
     "Y = (double)generate_noisy_signal(X)"
 )
 ```
 \
-\
+
 ## Plot data
 
 Let's plot the `X` and `Y` columns to see what this signal like.
@@ -102,7 +102,7 @@ from deephaven import Plot
 data_plot = Plot.plot("Noisy Signal", data_table, "X", "Y").show()
 ```
 \
-\
+
 ## Remove noise
 
 Our signal is cyclic, but with some clear irregularities, since we have the sum of three different sine waves of differing amplitudes and frequencies.  Without the prior knowledge we have (since we just made the signal), we might know that it's cyclic, but not much else.  We would, however, probably want to learn more about the signal beneath the noise.  There are many different ways we could get more information, so let's explore a few of them.
@@ -119,7 +119,7 @@ quantized_plot = Plot.plot("Quantized Signal", data_table_quantized, "X", "Quant
 \
 Hmm.  Rounding each data point to the nearest integer doesn't really help much.  That's also not really surprising.  We're not really going to be able to reduce noise in the data by only working on one data point at a time.  We could operate on multiple data points by using globals to access them in a function, but that's generally not good coding practice.  Instead, let's use the learn module to operate on however many values we please.  Before we dive into real analysis, let's start with the basics of the learn module.
 \
-\
+
 ## deephaven.learn
 
 `deephaven.learn` is a package designed to facilitate the transfer of data to and from Deephaven tables and NumPy arrays.  We can exemplify this with some simple code.
@@ -163,7 +163,7 @@ Let's break down the code above step by step:
 
 There are 1000 rows in `data_table`.  We've specified a `batch_size` of 101 to demonstrate that the `deephaven.learn` will take _**up to**_ `batch_size` rows at once.  The first nine times data is taken from the table, 101 rows are used.  The last time it's called, only 91 rows remain in the table, so 91 are used.  This is an important concept that plays a critical role for real-time applications, as we'll demonstrate later on.
 \
-\
+
 ## Quantize the signal with deephaven.learn
 
 We previously "quantized" the signal by rounding each value to the nearest integer.  It was a very poor attempt to smooth the noise out of the data.  This time, let's properly quantize the data by quantizing segments at a time using `deephaven.learn`.  We can reuse the `table_to_numpy_double` function we just made.  This time around, we'll have to use a function that defines how data is placed from a NumPy array back into a table.
@@ -187,8 +187,9 @@ data_table_quantized = learn.learn(
 
 data_plot_quantized = Plot.plot("Raw Signal", data_table_quantized, "X", "Y").plot("Quantized Signal", data_table_quantized, "X", "Quantized_Y").show()
 ```
+
 \
-\
+
 ## Rolling ball filter
 
 That helps a bit, but the real signal clearly isn't quantized like this underneath the noise.  We are taking a step in the right direction.  This time around, let's do some real signal filtering by applying a discrete convolution of the signal based on the `batch_size` we provide.
@@ -291,8 +292,8 @@ thread.start()
 
 data_plot_live = Plot.plot("Raw Signal", data_table_live, "X", "Y").show()
 ```
-\
-\
+
+
 # Polynomial fit in real-time
 
 Alright, with a live feed set up and ready to go, let's do the polynomial fitting.  But this time, it's in real-time.  Oh yea, and we don't have to do any more work.  Everything is already set up that we need!
