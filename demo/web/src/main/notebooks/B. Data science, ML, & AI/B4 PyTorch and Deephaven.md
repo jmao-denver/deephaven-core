@@ -139,8 +139,8 @@ def table_to_tensor_integer(rows, cols):
     return torch.from_numpy(np.squeeze(gather.table_to_numpy_2d(rows, cols, dtype = np.intc)))
     
 # A function to scatter integer model predictions back into a table
-def tensor_to_table_integer(data, index):
-    return int(data[index])
+def tensor_to_table_integer(predictions, index):
+    return int(predictions[index])
 ```
 \
 \
@@ -150,7 +150,8 @@ With that done, it's time to put everything together.  Let's start by training t
 learn.learn(
     table = iris_train,
     model_func = train_model,
-    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_tensor_double), learn.Input("Class", table_to_tensor_integer)],
+    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_tensor_double), 
+              learn.Input(["Class"], table_to_tensor_integer)],
     outputs = None,
     batch_size = iris_train.intSize()
 )
