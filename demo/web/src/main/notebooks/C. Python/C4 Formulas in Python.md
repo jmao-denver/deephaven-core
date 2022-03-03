@@ -86,4 +86,3 @@ result = source.update("Sum = Y + Z")
 ```
 
 Deephaven has a rich query language that is ready for your expansion.  
-
