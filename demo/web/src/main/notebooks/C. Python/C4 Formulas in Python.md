@@ -85,4 +85,5 @@ source = newTable(
 result = source.update("Sum = Y + Z")
 ```
 
-Deephaven has a rich query language that is ready for your expansion. 
+Deephaven has a rich query language that is ready for your expansion.  
+
