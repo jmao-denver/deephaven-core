@@ -518,3 +518,24 @@ gcloud compute images create deephaven-app-0-0-4 --source-disk=snapshot-root    
 
 # Make sure to reserve enough instances that we don't run out prematurely
 gcloud compute reservations create demo-reservation --machine-type=n2d-standard-4 --zone=us-central1-f --vm-count=15 --project=deephaven-oss
+
+
+
+TO ADD NEW USERS WHO CAN DEPLOY MACHINES:
+
+Have them send a .pub ssh key, add it here:
+https://console.cloud.google.com/compute/metadata?project=deephaven-oss&tab=sshkeys
+
+Next, go to https://console.cloud.google.com/iam-admin/iam?project=deephaven-oss and edit/create a principal for their illumon.com email address. Give them the following permissions:
+Demo Admin Role
+Demo Controller Role
+
+hit save.
+
+Have user run `gcloud auth login` from their shell, to login with their illumon.com email.
+
+Now, have the user run
+./gradlew deployMachine -Phostname=any-machine-name
+
+
+This should succeed.
