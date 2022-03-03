@@ -59,7 +59,7 @@ Pandas uses `float32` and `float64` data types, which are equivalent to `float` 
 \
 Pandas has fewer data types than Deephaven. To learn more about creating tables with specific types, see our guide [How to create a table with newTable](https://deephaven.io/core/docs/how-to-guides/new-table/).
 
-\
+
 
 ## Table operations
 
@@ -376,7 +376,7 @@ data_frame = pd.DataFrame(
 def agg_list(data):
     d = {}
     d['Sum'] = np.sum(data['C'])
-    d['Min'] = np.minimum(data['C'])
+    d['Min'] = np.amin(data['C'])
     d['Std'] = np.std(data['C'])
     d['WAvg'] = np.average(data['C'], weights=data['B'])
     return pd.Series(d)

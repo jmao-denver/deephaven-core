@@ -112,18 +112,18 @@ def train_model(x_train, y_train):
 When our model is trained, we then need to use the trained network on the test dataset.  Let's construct a function to do just that.
 
 ```python
-def predict_with_model(x_test):
-    if x_test.dim() == 1:
-        x_test = torch.unsqueeze(x_test, 0)
-
-    predictions = []
+def predict_with_model(features):
+    if features.dim() == 1:
+        features = torch.unsqueeze(features, 0)
+    preds = []
 
     with torch.no_grad():
-        for val in x_test():
+        for val in features:
             y_hat = model.forward(val)
-            predictions.append(y_hat.argmax().item())
+            preds.append(y_hat.argmax().item())
 
-    return predictions
+    # Return the model's predictions
+    return preds
 ```
 \
 \
@@ -135,12 +135,12 @@ def table_to_tensor_double(rows, columns):
     return torch.from_numpy(np.squeeze(gather.table_to_numpy_2d(rows, columns, dtype = np.double)))
 
 # A function to gather integer values from a table into a torch tensor
-def table_to_tensor_integer(rows, columns):
-    return torch.from_numpy(np.squeeze(gather.table_to_numpy_2d(rows, columns, dtype = int)))
-
+def table_to_tensor_integer(rows, cols):
+    return torch.from_numpy(np.squeeze(gather.table_to_numpy_2d(rows, cols, dtype = np.intc)))
+    
 # A function to scatter integer model predictions back into a table
-def tensor_to_table_integer(predictions, index):
-    return int(data[idx])
+def tensor_to_table_integer(data, index):
+    return int(data[index])
 ```
 \
 \

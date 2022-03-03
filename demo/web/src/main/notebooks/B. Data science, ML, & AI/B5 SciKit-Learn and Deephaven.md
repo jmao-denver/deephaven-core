@@ -72,13 +72,13 @@ def fit_knn(x_train, y_train):
     neigh = knn(n_neighbors = 3)
     neigh.fit(x_train, y_train)
 
-def use_fitted_knn(x_test):
-    if x_test.ndim == 1:
-        x_test = x_test.expand_dims(x_test, 0)
+def use_knn(features):
+    if features.ndim == 1:
+        features = np.expand_dims(features, 0)
 
-    predictions = np.zeros(len(x_test))
-    for i in range(len(x_test)):
-        predictions[i] = neigh.predict([x_test[i]])
+    predictions = np.zeros(len(features))
+    for i in range(0, len(features)):
+        predictions[i] = neigh.predict([features[i]])
 
     return predictions
 ```
@@ -87,16 +87,16 @@ def use_fitted_knn(x_test):
 There's one more step we need to take before we use these functions.  We have to define how our K-Neighbors classifier will interact with data in Deephaven tables.  There will be two functions that gather data from a table, and one that scatters data back into an output table.
 
 ```python
-# A function to gather double values from a table into a NumPy ndarray
-def table_to_numpy_double(rows, columns):
-    return np.squeeze(gather.table_to_numpy_2d(rows, columns, dtype = np.double))
+# A function to gather data from columns into a NumPy array of doubles
+def table_to_array_double(rows, cols):
+    return gather.table_to_numpy_2d(rows, cols, dtype = np.double)
 
-# A function to gather integer values from a table into a NumPy ndarray
-def table_to_numpy_integer(rows, columns):
-    return np.squeeze(gather.table_to_numpy_2d(rows, columns, dtype = int))
+# A function to gather data from columns into a NumPy array of integers
+def table_to_array_int(rows, cols):
+    return np.squeeze(gather.table_to_numpy_2d(rows, cols, dtype = np.intc))
 
-# A function to scatter integer predictions back into a table
-def numpy_to_table_integer(predictions, index):
+# A function to extract a list element and cast to an integer
+def get_predicted_class(data, idx):
     return int(data[idx])
 ```
 \
@@ -167,11 +167,11 @@ Now we've got some faux live incoming measurements.  We can just use our fitted 
 
 ```python
 iris_classifications_live = learn.learn(
-    table = live_iris, 
-    model_func = use_fitted_knn,
-    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_tensor_double)],
-    outputs = [learn.Output("PredictedClass", tensor_to_table_integer, "int")],
-    batch_size = 5
+    table = live_iris,
+    model_func = use_knn,
+    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_array_double)],
+    outputs = [learn.Output("LikelyClass", get_predicted_class, "int")],
+    batch_size = 150
 )
 ```
 \
