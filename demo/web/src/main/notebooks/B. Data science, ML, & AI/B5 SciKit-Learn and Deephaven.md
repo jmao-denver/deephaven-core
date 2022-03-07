@@ -67,11 +67,13 @@ With our data quantized and split into training and testing sets, we can get to 
 ```python
 neigh = 0
 
-def fit_knn(x_train, y_train):
+# Construct and classify the Iris dataset
+def fit_knn(X_train, Y_train):
     global neigh
     neigh = knn(n_neighbors = 3)
-    neigh.fit(x_train, y_train)
+    neigh.fit(X_train, Y_train)
 
+# Use the K-Nearest neighbors classifier on the Iris dataset
 def use_knn(features):
     if features.ndim == 1:
         features = np.expand_dims(features, 0)
@@ -99,9 +101,9 @@ def table_to_array_int(rows, cols):
 def get_predicted_class(data, idx):
     return int(data[idx])
 
-# A function to scatter integer predictions back into a table
-def numpy_to_table_integer(predictions, index):
-    return int(predictions[index])
+# A function to extract a list element and cast to an integer
+def get_predicted_class(data, idx):
+    return int(data[idx])
 ```
 \
 \
@@ -111,10 +113,9 @@ With that done, it's time to put everything together.  Let's start by fitting ou
 learn.learn(
     table = iris_train,
     model_func = fit_knn,
-    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_numpy_double), 
-              learn.Input(["Class"], table_to_numpy_integer)],
+    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_array_double), learn.Input("Class", table_to_array_int)],
     outputs = None,
-    batch_size = iris_train.intSize()
+    batch_size = 150
 )
 ```
 \
@@ -122,12 +123,12 @@ learn.learn(
 We've got a fitted classifier now.  Let's test it out on our test table.
 
 ```python
-iris_test_knn = learn.learn(
+iris_knn_classified = learn.learn(
     table = iris_test,
-    model_func = use_fitted_knn,
-    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_numpy_double)],
-    outputs = [learn.Output("PredictedClass", numpy_to_table_integer, "int")],
-    batch_size = iris_test.size()
+    model_func = use_knn,
+    inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_array_double)],
+    outputs = [learn.Output("ClassifiedClass", get_predicted_class, "int")],
+    batch_size = 150
 )
 ```
 \
@@ -146,24 +147,28 @@ min_sepal_width, max_sepal_width = raw_iris["SepalWidthCM"].min(), raw_iris["Sep
 With these quantities now calculated and stored in memory, we need to set up alive table that we can write measurements to.  To keep it simple, we'll write measurements to the table once per second for a minute.
 
 ```python
+# Create the table writer
 table_writer = DynamicTableWriter(
     ["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"],
-    [dht.double] * 4
+    [dht.double, dht.double, dht.double, dht.double]
 )
 
+# Get the live, ticking table
 live_iris = table_writer.getTable()
 
-def write_faux_iris_measurements():
+# This function creates faux Iris measurements once per second for a minute
+def write_to_iris():
     for i in range(60):
-        sepal_length = np.round(random.uniform(min_sepal_length, max_sepal_length), 1)
-        sepal_width = np.round(random.uniform(min_sepal_width, max_sepal_width), 1)
-        petal_length = np.round(random.uniform(min_petal_length, max_petal_length), 1)
-        petal_width = np.round(random.uniform(min_petal_width, max_petal_width), 1)
+        petal_length = random.randint(10, 69) / 10
+        petal_width = random.randint(1, 25) / 10
+        sepal_length = random.randint(43, 79) / 10
+        sepal_width = random.randint(20, 44) / 10
 
         table_writer.logRow(sepal_length, sepal_width, petal_length, petal_width)
         time.sleep(1)
 
-thread = threading.Thread(target = write_faux_iris_measurements)
+# Use a thread to write data to the table
+thread = threading.Thread(target = write_to_iris)
 thread.start()
 ```
 \
@@ -171,7 +176,7 @@ thread.start()
 Now we've got some faux live incoming measurements.  We can just use our fitted K-Neighbors classifier on the live table!
 
 ```python
-iris_classifications_live = learn.learn(
+iris_classified_live = learn.learn(
     table = live_iris,
     model_func = use_knn,
     inputs = [learn.Input(["SepalLengthCM", "SepalWidthCM", "PetalLengthCM", "PetalWidthCM"], table_to_array_double)],
