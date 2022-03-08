@@ -54,8 +54,8 @@ public class ImageDeployer {
         final Machine machine = ctrl.requestMachine(workerName, true, false);
         manager.waitForSsh(machine);
         ctrl.waitUntilHealthy(machine);
-        LOG.infof("Your machine %s is healthy!", machine.getDomainName());
-        LOG.infof("Visit it on the web: https://%s", machine.getDomainName());
+        LOG.infof("\n\nYour machine %s is healthy!", machine.getDomainName());
+        LOG.infof("Visit it on the web: https://%s\n\n", machine.getDomainName());
     }
 
     private void deploy(final String version, String machinePrefix) throws IOException, InterruptedException {
@@ -182,7 +182,7 @@ public class ImageDeployer {
         LOG.infof("Destroying VMs %s and %s", worker, controller);
         manager.destroyCluster(Arrays.asList(worker, controller), "");
 
-        LOG.infof("Done deployment! Test https://%s.%s and promote to leader by updating DNS for %s to point to %s",
+        LOG.infof("Done deployment!\n\nTest https://%s.%s and promote to leader by updating DNS for %s to point to %s\n\n",
                 newCtrl.getHost(), newCtrl.domain().getDomainRoot(), newCtrl.domain().getDomainRoot(), newCtrl.getIp().getIp());
     }
 

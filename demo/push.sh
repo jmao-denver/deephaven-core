@@ -7,8 +7,8 @@ while [ -n "$dir" ]; do
     docker rmi deephaven/web:local-build &>/dev/null
     docker rmi deephaven/demo-grpc-api:local-build &>/dev/null
     docker rmi deephaven/demo-web:local-build &>/dev/null
-    docker rmi us-central1-docker.pkg.dev/deephaven-oss/deephaven/grpc-api:0.8.18 &>/dev/null
-    docker rmi us-central1-docker.pkg.dev/deephaven-oss/deephaven/web:0.8.18 &>/dev/null
+    docker rmi us-central1-docker.pkg.dev/deephaven-oss/deephaven/grpc-api:0.8.20 &>/dev/null
+    docker rmi us-central1-docker.pkg.dev/deephaven-oss/deephaven/web:0.8.20 &>/dev/null
 
     export WEB_VERSION=${WEB_VERSION:-0.10.0}
     "$dir/gradlew" quarkusBuild pushAll \

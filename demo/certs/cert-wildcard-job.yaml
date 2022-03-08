@@ -63,7 +63,7 @@ spec:
       containers:
         # Bash script that starts an http server and launches certbot
         # Forked from github.com/sjenning/kube-nginx-letsencrypt
-        - image: "us-central1-docker.pkg.dev/deephaven-oss/deephaven/cert-wildcard-job:0.8.18"
+        - image: "us-central1-docker.pkg.dev/deephaven-oss/deephaven/cert-wildcard-job:0.8.20"
           imagePullPolicy: Always
           name: cert-wildcard-job
           env:
@@ -118,7 +118,7 @@ spec:
   #     ./gradlew :demo:tagCerts
   #     PROJECT_ID=deephaven-oss
   #     ZONE=us-central1
-  #     DOCKER_VERSION=0.8.18
+  #     DOCKER_VERSION=0.8.20
   #     docker push ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/cert-wildcard-job:$DOCKER_VERSION
 
 
