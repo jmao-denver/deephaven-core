@@ -487,6 +487,7 @@ tasks.register('prepareCompose') {
             project(':docker-web').tasks.findByName('buildDocker'),
             project(':envoy').tasks.findByName('buildDocker'),
             project(':grpc-proxy').tasks.findByName('buildDocker-grpc-proxy'),
+            project(':demo-grpc-api').tasks.findByName('buildImage'),
             project(':demo-web').tasks.findByName('buildImage')
 }
 
