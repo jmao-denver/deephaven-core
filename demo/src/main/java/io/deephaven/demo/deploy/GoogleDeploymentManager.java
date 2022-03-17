@@ -215,14 +215,6 @@ public class GoogleDeploymentManager implements DeploymentManager {
         dns.tx(tx -> {
             allNodes.parallelStream().forEach (node -> {
                 try {
-                    node.setDestroyed(true);
-                    gcloud(false, "instances", "delete", "-q", node.getHost());
-                } catch (IOException | InterruptedException e) {
-                    System.err.println("Unknown error deleting instance " + node.getHost());
-                    e.printStackTrace();
-                    return;
-                }
-                try {
                     String ip = node.getIpAddress();
                     if (ip == null) {
                         ip = getGcloudIp(node);
@@ -232,20 +224,12 @@ public class GoogleDeploymentManager implements DeploymentManager {
                     LOG.error("Unknown error deleting dns entry for " + node.getHost() + " @ " + node.getIp(), e);
                     return;
                 }
-                List<String> deleteArgs = new ArrayList<>(Arrays.asList("gcloud", "compute", "snapshots", "delete", "--quiet"));
-                deleteArgs.add(node.getHost() + "-clean");
-                deleteArgs.add(node.getHost() + "-finished");
                 try {
-                    execute(deleteArgs);
+                    node.setDestroyed(true);
+                    gcloud(false, "instances", "delete", "-q", node.getHost());
                 } catch (IOException | InterruptedException e) {
-                    LOG.error("Unknown error deleting dns snapshots: " + deleteArgs, e);
-                    return;
-                }
-                String diskName = diskPrefix + node.getHost();
-                try {
-                    gcloud(true, "disks", "delete", diskName, "--quiet");
-                } catch (IOException | InterruptedException e) {
-                    LOG.error("Unknown error deleting dns disk: " + diskName, e);
+                    System.err.println("Unknown error deleting instance " + node.getHost());
+                    e.printStackTrace();
                 }
             });
         });

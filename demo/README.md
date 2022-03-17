@@ -539,3 +539,24 @@ Now, have the user run
 
 
 This should succeed.
+
+
+# Deployment
+
+Once ./gradlew deployDemo succeeds, and you have tested the new controller,  
+your next step is to update the DNS record for the main site to point to the  
+new controller.  The console will print the new controller's IP address,  
+or you can find it using `dig +short controller-1-2-3.demo.deephaven.app`.
+
+The DNS record is updated using the url:  
+[https://console.cloud.google.com/net-services/dns/zones/deephaven-app/rrsets/demo.deephaven.app./A/view?project=deephaven-oss]
+
+Once the old controller realizes it is no longer the leader,  
+it will stop modifying the cluster; once the new controller notices the  
+DNS change, it will also start modifying the cluster.
+
+You may then turn off the old controller in the web console.  
+[https://console.cloud.google.com/compute/instances?project=deephaven-oss]  
+Currently, you will also need to manually delete the old controller instances.  
+You can use the filter bar, searching for `Labels.dh-version:<oldversion>`,  
+then select all matching machines and click Delete.

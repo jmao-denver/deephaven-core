@@ -316,3 +316,15 @@ tasks.register('deployMachine', JavaExec) {
         exe.systemProperty('useImages', 'false')
         logger.quiet "Setting machine {} to use version {}", machineName, machineVersion
 }
+
+Task quark = tasks.getByName('quarkusBuild')
+quark.finalizedBy {
+    // check for error state,
+    if (quark.state.failure) {
+        logger.quiet("This task can fail if you have not recently authorized docker with gcloud")
+        logger.quiet("To do so:\n" +
+                "ZONE=us-central1\n" +
+                "REPO_ROOT=\"\${ZONE}-docker.pkg.dev\"\n" +
+                "gcloud auth configure-docker \"\$REPO_ROOT\"")
+    }
+}
