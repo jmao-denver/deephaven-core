@@ -25,21 +25,21 @@ docker-compose push
 
 Then, import images to minikube:
 
-minikube image load deephaven/grpc-api:local-build
+minikube image load deephaven/server:local-build
 minikube image load deephaven/grpc-proxy:local-build
 minikube image load deephaven/web:local-build
 minikube image load deephaven/envoy:local-build
 
-minikube image load deephaven/grpc-api:local-build  deephaven/grpc-proxy:local-build  deephaven/web:local-build deephaven/envoy:local-build
+minikube image load deephaven/server:local-build  deephaven/grpc-proxy:local-build  deephaven/web:local-build deephaven/envoy:local-build
 
 
 
-There! Now you can reference grpc-api:local images in kubernets/minikube
+There! Now you can reference server:local images in kubernets/minikube
 
 
 
 # All in one Update Minikube:
-./gradlew preCo && docker-compose push && minikube image load deephaven/grpc-api:local-build  deephaven/grpc-proxy:local-build  deephaven/web:local-build deephaven/envoy:local-build
+./gradlew preCo && docker-compose push && minikube image load deephaven/server:local-build  deephaven/grpc-proxy:local-build  deephaven/web:local-build deephaven/envoy:local-build
 
 # To change envoy log levels:
 `<insert instructions how to shell into container through k8 pod>`
@@ -84,7 +84,7 @@ CLUSTER_NAME=dhce-auto
 ZONE=us-central1
 K8S_CONTEXT=gke_"$PROJECT_ID"_"$ZONE"_"$CLUSTER_NAME"
 K8S_NAMESPACE=dh
-DOCKER_VERSION=0.8.20
+DOCKER_VERSION=0.8.22
 
 https://console.cloud.google.com/artifacts/create-repo?project=deephaven-oss
 
@@ -102,13 +102,13 @@ enable artifact registry:
 https://console.cloud.google.com/apis/library/artifactregistry.googleapis.com?project=deephaven-oss
 
 docker tag deephaven/grpc-proxy:local-build ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/grpc-proxy:$DOCKER_VERSION
-docker tag deephaven/grpc-api:local-build ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/grpc-api:$DOCKER_VERSION
+docker tag deephaven/server:local-build ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/server:$DOCKER_VERSION
 
 docker tag deephaven/web:local-build ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/web:$DOCKER_VERSION
 
 
 docker push ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/grpc-proxy:$DOCKER_VERSION &
-docker push ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/grpc-api:$DOCKER_VERSION &
+docker push ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/server:$DOCKER_VERSION &
 docker push ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/web:$DOCKER_VERSION &
 
 docker push ${ZONE}-docker.pkg.dev/${PROJECT_ID}/deephaven/cert-wildcard-job:$DOCKER_VERSION &
@@ -240,10 +240,10 @@ Now, pass the name of your ip address to helm
 
 
 Progress notes:
-expose web and grpc-api as separate services over separate protocols
-web will be https, grpc-api as http/2, http redirects to https
-grpc-api will need a sidecar to handle healthchecks (health check goes to the port of the container, not targetPort)
-ditch envoy. ditch grpc-proxy. just web + grpc-api
+expose web and server as separate services over separate protocols
+web will be https, server as http/2, http redirects to https
+server will need a sidecar to handle healthchecks (health check goes to the port of the container, not targetPort)
+ditch envoy. ditch grpc-proxy. just web + server
 
 
 

@@ -326,7 +326,7 @@
       request.onreadystatechange = function () {
         if (request.readyState === 4) {
           if (request.status >= 200 && request.status < 400) {
-            // we win! ...but wait 2s, to give grpc-api time to come online (or make /health smarter)
+            // we win! ...but wait 2s, to give server time to come online (or make /health smarter)
             finish(); // pre-canned 1.5s ending animation
             setTimeout(goToWorker, 2000);
           } else {

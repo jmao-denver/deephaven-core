@@ -1,10 +1,7 @@
-FROM deephaven/server:local-build
+FROM deephaven/server-all-ai:local-build
 
 # Add the extra libraries to the classpath
 COPY libs/ /app/libs
-
-# Add the application directory
-COPY app.d/ /app.d
 
 HEALTHCHECK --interval=3s --retries=10 --timeout=11s CMD /bin/grpc_health_probe \
     -addr=localhost:8888 \

@@ -7,8 +7,8 @@ cat << 'EOF' > "$DH_DIR/docker-compose.yml"
 version: "3.4"
 
 services:
-  grpc-api:
-    image: ${REPO:-ghcr.io/deephaven}/grpc-api:${VERSION:-latest}
+  server:
+    image: ${REPO:-ghcr.io/deephaven}/server:${VERSION:-latest}
     expose:
       - '8888'
     volumes:
@@ -29,7 +29,7 @@ services:
     volumes:
       - api-cache:/cache
     depends_on:
-      grpc-api:
+      server:
         condition: service_healthy
     environment:
       - JAVA_OPTIONS="-Xmx2g"
@@ -48,7 +48,7 @@ services:
     ports:
       - "${PORT:-10000}:10000"
     depends_on:
-      grpc-api:
+      server:
         condition: service_healthy
       web:
         condition: service_started
@@ -165,7 +165,7 @@ static_resources:
                         - match: # Any GRPC call is assumed to be forwarded to the real service
                             prefix: "/"
                           route:
-                            cluster: grpc-api
+                            cluster: server
                             max_stream_duration:
                               grpc_timeout_header_max: 0s
                             timeout: 0s
@@ -194,7 +194,7 @@ static_resources:
                     private_key:
                       filename: /etc/ssl/dh/tls.key
   clusters:
-    - name: grpc-api
+    - name: server
       connect_timeout: 10s
       type: LOGICAL_DNS
       lb_policy: ROUND_ROBIN
@@ -202,13 +202,13 @@ static_resources:
       common_http_protocol_options:
         max_stream_duration: 0s
       load_assignment:
-        cluster_name: grpc-api
+        cluster_name: server
         endpoints:
           - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
-                      address: grpc-api
+                      address: server
                       # address: 127.0.0.1
                       port_value: 8888
       #      health_checks:

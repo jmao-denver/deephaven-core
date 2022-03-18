@@ -522,10 +522,10 @@ public class DhDemoServer implements QuarkusApplication {
         // log.apiClient(api.getApiClient());
         // log.name(userName);
         // log.namespace(newPod.getMetadata().getNamespace());
-        // // inside the worker, grpc-api is where the interesting logs are
+        // // inside the worker, server is where the interesting logs are
         // // (though, we should probably tail the controller health check logs instead, they are
         // boring atm)
-        // log.container("grpc-api");
+        // log.container("server");
         // setDaemon(true);
         // }
         //

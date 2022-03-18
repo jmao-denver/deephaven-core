@@ -116,10 +116,10 @@ spec:
               path: /health
 
         #
-        # grpc-api container.  Where all the stateful brains live
+        # server container.  Where all the stateful brains live
         #
-        - name: grpc-api
-          image: "{{ .Values.dh.repo}}/grpc-api:{{ .Values.dh.version }}"
+        - name: server
+          image: "{{ .Values.dh.repo}}/server:{{ .Values.dh.version }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -194,7 +194,7 @@ spec:
             timeoutSeconds: 3
 
         # The envoy container. All ingress to the pod flows through envoy,
-        # who then routes it to grpc-api or web as appropriate
+        # who then routes it to server or web as appropriate
         - name: envoy
           image: envoyproxy/envoy:v1.18.3
           imagePullPolicy: IfNotPresent

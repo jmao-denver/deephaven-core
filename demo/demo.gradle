@@ -1,7 +1,6 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage
 import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
-import org.gradle.internal.jvm.Jvm
 
 plugins {
     id 'java'
@@ -11,7 +10,7 @@ plugins {
 }
 
 
-evaluationDependsOn ':demo-grpc-api'
+evaluationDependsOn ':demo-server'
 evaluationDependsOn ':demo-web'
 evaluationDependsOn ':envoy'
 
@@ -184,13 +183,9 @@ String webTag = machineVersion
 String envoyRepository = project.property('envoyRepository')
 String envoyTag = machineVersion
 
-String certsRepository = project.property('certsRepository')
-String certsTag = machineVersion
-
-
 def tagDemoWorkerTask = tasks.register('tagDemoWorker', DockerTagImage) {
     DockerTagImage t ->
-        def demoGrpcApi = project(':demo-grpc-api')
+        def demoGrpcApi = project(':demo-server')
         t.imageId.set demoGrpcApi.property('image') as String
         t.repository.set grpcApiRepository
         t.tag.set grpcApiTag
@@ -218,18 +213,9 @@ def tagEnvoy = tasks.register('tagEnvoy', DockerTagImage) {
         t.dependsOn demoEnvoy.tasks.findByName('buildDocker')
 }
 
-def tagCerts = tasks.register('tagCerts', DockerTagImage) {
-    DockerTagImage t ->
-        def demoCerts = project(':demo-certs')
-        t.imageId.set demoCerts.property('image') as String
-        t.repository.set certsRepository
-        t.tag.set certsTag
-        t.force.set true
-        t.dependsOn demoCerts.tasks.findByName('buildImage')
-}
 
 def tagAll = tasks.register('tagAll') {
-    it.dependsOn tagDemoWorkerTask, tagWebTask, tagEnvoy, tagCerts
+    it.dependsOn tagDemoWorkerTask, tagWebTask, tagEnvoy
 }
 
 def untagDemoWorker = tasks.register('untagDemoWorker', DockerRemoveImage) {
@@ -256,16 +242,8 @@ def untagEnvoy = tasks.register('untagEnvoy', DockerRemoveImage) {
     }
 }
 
-def untagCerts = tasks.register('untagCerts', DockerRemoveImage) {
-    it.imageId.set "${certsRepository}:${certsTag}"
-    it.onError { exception ->
-        if (!exception.message.contains('No such image'))
-            throw exception
-    }
-}
-
 tasks.register('cleanDocker') {
-    it.dependsOn untagDemoWorker, untagWeb, untagEnvoy, untagCerts
+    it.dependsOn untagDemoWorker, untagWeb, untagEnvoy
 }
 
 def pushAllTask = tasks.register('pushAll', DockerPushImage) {
@@ -274,7 +252,6 @@ def pushAllTask = tasks.register('pushAll', DockerPushImage) {
                 "${grpcApiRepository}:${grpcApiTag}",
                 "${webRepository}:${webTag}",
                 "${envoyRepository}:${envoyTag}",
-                "${certsRepository}:${certsTag}",
         ] as Set)
         p.dependsOn tagAll
 }
