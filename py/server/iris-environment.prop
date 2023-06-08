@@ -1,0 +1,169 @@
+# -------------------------------------------------------------------------
+# Customizable universal environment properties:
+# -------------------------------------------------------------------------
+#
+# This file includes and overrides properties in iris-defaults.prop; the
+# base set of properties supplied by Deephaven.
+# The properties set in this file take precedence over those set in the default
+# file, and will not be changed in a Deephaven upgrade.
+#
+# -------------------------------------------------------------------------
+includefiles=iris-defaults.prop
+
+# Used in controller, DIS, tailer, LAS, ACL write server
+anomalygateway.enabled=false
+
+# Email defaults used wherever emails are generated
+smtp.mx.domain=
+critEmail=
+
+
+# Set directly in the hostconfig to avoid issues with the launcher and local consoles
+# If you want to limit the folder browsing of where a user can upload files from
+#EmbeddedDbConsole.csvUploadDirectory=/db/TempFiles/uploads
+
+iris.enableManagedUserAuthentication=true
+
+# DB query and merge server parameters
+IrisDbGroovySession.initScripts=core/illumon_core_utils.groovy
+UpdatePerformanceTracker.reportingMode=DB_ONLY
+
+WorkerPythonEnvironment.defaultScriptPath=<devroot>/DB/python
+
+# For clients that operate over Envoy, we require large messages to push classes, execute complicated queries, or
+# return results.
+websocket.client.max.message.size=100000000
+
+# Set to lower than Enterprise (100), so that new installations display Community Workers in the code studio dropdown by default
+WorkerKind.DeephavenCommunity.displayOrder=50
+
+WorkerKind.DeephavenCommunity-0-24-3.class=com.illumon.iris.db.tables.remotequery.DndWorkerKind
+WorkerKind.DeephavenCommunity-0-24-3.path=/usr/illumon/dnd/io.deephaven.enterprise.dnd-0.24.3-1.20230511.068
+WorkerKind.DeephavenCommunity-0-24-3.venv=/usr/illumon/dnd/rt_env
+WorkerKind.DeephavenCommunity-0-24-3.title=Community Riptable
+
+# The service.name entries define specific contexts for Deephaven processes. A process
+# may only use one service.name, but that entry may be in multiple contexts. In-worker
+# services typically contain two or more entries for their service.name values, as
+# they need the context both for their worker type, as well as for their process type.
+# In-worker service.name values are in the format <worker_type>_<query|merge>.
+# For example, an in-worker data import server (db_dis) runs in a merge worker, so its
+# defined service.name of db_dis_merge is added to the context of merge workers, as well
+# as the context for the DIS itself.
+
+[service.name=authentication_server] {
+    authentication.server.acceptplaintext=false
+    authentication.server.customauth.enabled=true
+    authentication.server.customauth.class=com.illumon.iris.db.v2.permissions.MysqlDbAclProvider
+}
+
+# Invoked by db_acl_write_server, iris_db_user_mod, query replacement tool, query grep, and connectivity test
+[service.name=db_acl_write_server|iris_db_user_mod] {
+    # No properties to be overridden
+}
+
+# For all db_dis processes
+[service.name=db_dis|db_dis_merge] {
+    # No properties to be overridden
+}
+
+# For all db_ltds processes
+[service.name=db_ltds|db_ltds_query] {
+    # No properties to be overridden
+}
+
+# For query and merge workers
+    # Update any of these as needed
+    # IrisDbGroovySession.initScripts=core/illumon_core_utils.groovy
+    # UpdatePerformanceTracker.reportingMode=DB_ONLY
+[service.name=dbquery|dbmerge|db_dis_merge|db_tdcp_query|db_ltds_query|tailer1_query|tailer1_merge|web_api_service] {
+    RemoteQueryDispatcher.websocket.enabled=true
+    RemoteQueryDispatcher.ide.enabled=true
+}
+
+# For merge workers
+[service.name=dbmerge|db_dis_merge|tailer1_merge] {
+    # No properties to be overridden
+}
+
+# For query workers
+[service.name=dbquery|db_tdcp_query|db_ltds_query|tailer1_query] {
+    # No properties to be overridden, unless this needs different properties from the merge server
+}
+
+# For all db_tdcp processes
+[service.name=db_tdcp|db_tdcp_query] {
+    # No properties to be overridden
+}
+
+# For iris_controller or controller_tool
+[service.name=iris_controller|controller_tool] {
+
+    # List of users and groups who can issue configuration reload commands
+    final configuration.reload.userGroups=superuser
+
+    # Key for mssql credentials
+    final PersistentQueryController.keyPairFile=/etc/sysconfig/illumon.d/auth/priv-controllerConsole.base64.txt
+}
+
+[service.name=log_aggregator_service] {
+    # No properties to be overridden
+}
+
+# For all tailer processes
+[service.name=tailer1|tailer1_query|tailer1_merge] {
+    # No properties to be overridden
+}
+
+# The web API and workers, by default, are run with full TLS support.
+[service.name=web_api_service] {
+    RemoteQueryDispatcher.websocket.enabled=true
+    RemoteQueryDispatcher.ide.enabled=true
+}
+
+[service.name=web_api_service|dbquery|dbmerge|db_dis_merge|db_tdcp_query|db_ltds_query|tailer1_query|tailer1_merge] {
+    # No properties to be overridden
+}
+
+
+[service.name=iris_console|interactive_console] {
+    # No properties to be overridden
+    # Put properties in here that you only want used on client machines connecting to a remote server
+}
+
+[service.name=import_bin_files] {
+    # No properties to be overridden
+}
+
+[service.name=auth_server_reload_tool] {
+    # No properties need customization by default.
+}
+
+[service.name=deploy_schema|validate_schema] {
+    # No particular custom properties needed
+}
+
+[service.name=iris_connectivity_test] {
+    # No particular custom properties needed
+}
+
+[service.name=iris_query_grep] {
+    # No particular custom properties needed
+}
+
+[service.name=iris_query_replacement_tool] {
+    # No particular custom properties needed
+}
+
+[service.name=generate_loggers] {
+    # No particular custom properties needed
+}
+
+[service.name=metadata_repair_tool] {
+    # No properties need customization by default.
+}
+
+[service.name=metadata_indexer] {
+    # No properties need customization by default.
+}
+
