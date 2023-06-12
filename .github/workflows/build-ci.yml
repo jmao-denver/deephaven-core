@@ -161,7 +161,7 @@ jobs:
       # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
       # https://github.com/docker/buildx/pull/535
       - name: Docker build server
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             BASE=deephaven/server-base:local-build
@@ -173,7 +173,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
 
       - name: Docker build server nltk
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             BASE=deephaven/nltk-base:local-build
@@ -185,7 +185,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
 
       - name: Docker build server pytorch
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             BASE=deephaven/pytorch-base:local-build
@@ -197,7 +197,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
 
       - name: Docker build server sklearn
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             BASE=deephaven/sklearn-base:local-build
@@ -209,7 +209,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
 
       - name: Docker build server tensorflow
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             BASE=deephaven/tensorflow-base:local-build
@@ -222,7 +222,7 @@ jobs:
 
       # Note: server-slim does not need BASE/SERVER build-args like the other server images
       - name: Docker build server slim
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             DEEPHAVEN_VERSION=${{ steps.deephaven_version.outputs.deephaven_version }}
@@ -320,7 +320,7 @@ jobs:
           echo "::set-output name=deephaven_version::$(cat build/version)"
 
       - name: Docker build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             DEEPHAVEN_VERSION=${{ steps.deephaven_version.outputs.deephaven_version }}
@@ -407,7 +407,7 @@ jobs:
           echo "::set-output name=deephaven_version::$(cat build/version)"
 
       - name: Build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             DEEPHAVEN_VERSION=${{ steps.deephaven_version.outputs.deephaven_version }}
@@ -498,7 +498,7 @@ jobs:
           echo "::set-output name=deephaven_version::$(cat build/version)"
 
       - name: Docker build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             DEEPHAVEN_VERSION=${{ steps.deephaven_version.outputs.deephaven_version }}
@@ -583,7 +583,7 @@ jobs:
           echo "::set-output name=deephaven_version::$(cat build/version)"
 
       - name: Docker build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           build-args: |
             DEEPHAVEN_VERSION=${{ steps.deephaven_version.outputs.deephaven_version }}
