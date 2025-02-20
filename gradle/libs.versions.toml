@@ -53,7 +53,7 @@ jdom2 = "2.0.6.1"
 jetbrains = "26.0.1"
 jetty = "11.0.20"
 jpy = "1.1.0"
-jsinterop = "2.0.2"
+jsinterop = "2.1.0"
 # google is annoying, and have different versions released for the same groupId
 jsinterop-base = "1.0.3"
 logback = "1.5.16"
