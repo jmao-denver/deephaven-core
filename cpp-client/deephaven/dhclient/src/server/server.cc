@@ -7,7 +7,7 @@
 #include <exception>
 #include <grpcpp/grpcpp.h>
 #include <optional>
-#include <grpc/support/log.h>
+#include "deephaven/client/utility/logging.h"
 #include <arrow/flight/client_auth.h>
 #include <arrow/flight/client.h>
 #include <arrow/flight/types.h>

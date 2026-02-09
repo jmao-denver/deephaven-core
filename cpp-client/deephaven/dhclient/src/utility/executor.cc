@@ -5,9 +5,9 @@
 
 #include <iostream>
 #include <thread>
+#include "deephaven/client/utility/logging.h"
 #include "deephaven/dhcore/utility/utility.h"
 
-#include <grpc/support/log.h>
 
 using deephaven::dhcore::utility::GetWhat;
 

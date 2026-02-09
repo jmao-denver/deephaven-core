@@ -4,7 +4,7 @@
 #include "deephaven/client/impl/table_handle_manager_impl.h"
 
 #include <map>
-#include <grpc/support/log.h>
+#include "deephaven/client/utility/logging.h"
 #include "deephaven/client/utility/executor.h"
 #include "deephaven/client/impl/table_handle_impl.h"
 #include "deephaven/client/impl/util.h"

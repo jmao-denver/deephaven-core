@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-#include <grpc/support/log.h>
+#include "deephaven/client/utility/logging.h"
 
 #include <arrow/array.h>
 #include <arrow/scalar.h>

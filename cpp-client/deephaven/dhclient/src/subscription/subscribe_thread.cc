@@ -7,7 +7,7 @@
 #include <arrow/buffer.h>
 #include <arrow/scalar.h>
 #include <atomic>
-#include <grpc/support/log.h>
+#include "deephaven/client/utility/logging.h"
 #include "deephaven/client/arrowutil/arrow_column_source.h"
 #include "deephaven/client/server/server.h"
 #include "deephaven/client/utility/arrow_util.h"
