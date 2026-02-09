@@ -18,6 +18,7 @@
 #include "deephaven/client/subscription/subscribe_thread.h"
 #include "deephaven/client/subscription/subscription_handle.h"
 #include "deephaven/client/utility/arrow_util.h"
+#include "deephaven/client/utility/logging.h"
 #include "deephaven/dhcore/chunk/chunk_maker.h"
 #include "deephaven/dhcore/clienttable/client_table.h"
 #include "deephaven/dhcore/container/row_sequence.h"
