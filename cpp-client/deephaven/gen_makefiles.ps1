@@ -1,4 +1,5 @@
 cmake -B build -S . `
+-DCMAKE_BUILD_TYPE=Debug `
 -DCMAKE_INSTALL_PREFIX="$env:FLIGHT_SQL_ODBC_INSTALL_DIR" `
 -DCMAKE_PREFIX_PATH="c:/git/arrow/cpp/vcpkg_installed/x64-windows" `
 -DArrow_DIR=C:/flight_sql_odbc_install `
