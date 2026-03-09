@@ -5,6 +5,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <cstring>
 
@@ -25,6 +26,32 @@ namespace deephaven::client::utility {
 typedef int gpr_log_severity;
 
 /**
+ * Get the minimum severity level to log.
+ * Reads GRPC_VERBOSITY environment variable once and caches the result.
+ *
+ * @return Minimum severity level (GPR_DEBUG=0, GPR_INFO=1, GPR_ERROR=2)
+ *         Default is GPR_ERROR (only errors shown by default)
+ */
+inline int GetMinSeverity() {
+  static int min_severity = -1;
+
+  if (min_severity == -1) {
+    const char* verbosity = std::getenv("GRPC_VERBOSITY");
+    if (verbosity == nullptr) {
+      min_severity = GPR_ERROR;  // Default: only show errors
+    } else if (std::strcmp(verbosity, "DEBUG") == 0 || std::strcmp(verbosity, "debug") == 0) {
+      min_severity = GPR_DEBUG;  // Show everything
+    } else if (std::strcmp(verbosity, "INFO") == 0 || std::strcmp(verbosity, "info") == 0) {
+      min_severity = GPR_INFO;   // Show INFO and ERROR
+    } else {
+      min_severity = GPR_ERROR;  // Unknown value, default to ERROR
+    }
+  }
+
+  return min_severity;
+}
+
+/**
  * Logging function compatible with gpr_log.
  * Replacement for gpr_log that works even when gRPC doesn't provide it.
  *
@@ -33,6 +60,11 @@ typedef int gpr_log_severity;
  * @param ... Variable arguments matching the format string
  */
 inline void DeephavenLog(int severity, const char* format, ...) {
+  // Filter messages based on minimum severity
+  if (severity < GetMinSeverity()) {
+    return;
+  }
+
   va_list args;
   va_start(args, format);
 
