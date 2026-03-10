@@ -60,6 +60,6 @@ def _register_named_java_executor(executor_name: str, java_executor: jpy.JType) 
     Raises:
         DHError
     """
-    if executor_name in executor_names():
-        raise DHError(f"Executor with name {executor_name} already registered")
+    # if executor_name in executor_names():
+    #     raise DHError(f"Executor with name {executor_name} already registered")
     _executors[executor_name] = lambda task: java_executor.accept(j_runnable(task))

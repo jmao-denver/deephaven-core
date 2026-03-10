@@ -33,6 +33,10 @@
 #include "deephaven_core/proto/table.grpc.pb.h"
 
 namespace deephaven::client::server {
+
+// Forward declaration
+class BearerMiddlewareFactory;
+
 namespace internal {
 struct TicketLess {
   using Ticket = io::deephaven::proto::backplane::grpc::Ticket;
@@ -47,6 +51,9 @@ struct TicketLess {
 class Server : public std::enable_shared_from_this<Server> {
   struct Private {
   };
+
+  // Allow BearerMiddlewareFactory to access sessionToken_ and mutex_
+  friend class BearerMiddlewareFactory;
 
   using ApplicationService = io::deephaven::proto::backplane::grpc::ApplicationService;
   using AddTableResponse = io::deephaven::proto::backplane::grpc::AddTableResponse;

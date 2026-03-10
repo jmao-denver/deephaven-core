@@ -14,6 +14,7 @@ from deephaven_internal import jvm
 
 py_dh_session = None
 
+
 def start_jvm_for_tests(jvm_props: Dict[str, str] = None):
     jvm.preload_jvm_dll()
     import jpy
@@ -56,7 +57,7 @@ def start_jvm_for_tests(jvm_props: Dict[str, str] = None):
         jvm_classpath = os.environ.get('DEEPHAVEN_CLASSPATH', '')
 
         # Intentionally small by default - callers should set as appropriate
-        jvm_maxmem = os.environ.get('DEEPHAVEN_MAXMEM', '256m')
+        jvm_maxmem = os.environ.get('DEEPHAVEN_MAXMEM', '4g')
 
         # Start up the JVM
         jpy.VerboseExceptions.enabled = True
@@ -68,21 +69,20 @@ def start_jvm_for_tests(jvm_props: Dict[str, str] = None):
         )
 
         # Set up a Deephaven Python session
-        py_scope_jpy = jpy.get_type("io.deephaven.engine.util.PythonScopeJpyImpl").ofMainGlobals()
-        global py_dh_session
+    py_scope_jpy = jpy.get_type("io.deephaven.engine.util.PythonScopeJpyImpl").ofMainGlobals()
+    global py_dh_session
 
-        no_op_thread_factory = jpy.get_type("io.deephaven.util.thread.ThreadInitializationFactory").NO_OP
-        _JOperationInitializationThreadPool = jpy.get_type("io.deephaven.engine.table.impl.OperationInitializationThreadPool")
-        _j_operation_initializer = _JOperationInitializationThreadPool(no_op_thread_factory)
+    no_op_thread_factory = jpy.get_type("io.deephaven.util.thread.ThreadInitializationFactory").NO_OP
+    _JOperationInitializationThreadPool = jpy.get_type("io.deephaven.engine.table.impl.OperationInitializationThreadPool")
+    _j_operation_initializer = _JOperationInitializationThreadPool(no_op_thread_factory)
 
-        _JPeriodicUpdateGraph = jpy.get_type("io.deephaven.engine.updategraph.impl.PeriodicUpdateGraph")
-        _j_test_update_graph = _JPeriodicUpdateGraph.newBuilder(_JPeriodicUpdateGraph.DEFAULT_UPDATE_GRAPH_NAME) \
-                .operationInitializer(_j_operation_initializer) \
-                .existingOrBuild()
+    _JPeriodicUpdateGraph = jpy.get_type("io.deephaven.engine.updategraph.impl.PeriodicUpdateGraph")
+    _j_test_update_graph = _JPeriodicUpdateGraph.newBuilder(_JPeriodicUpdateGraph.DEFAULT_UPDATE_GRAPH_NAME) \
+            .operationInitializer(_j_operation_initializer) \
+            .existingOrBuild()
 
-        _JPythonScriptSession = jpy.get_type("io.deephaven.integrations.python.PythonDeephavenSession")
-        py_dh_session = _JPythonScriptSession(_j_test_update_graph, _j_operation_initializer, no_op_thread_factory, py_scope_jpy)
-
+    _JPythonScriptSession = jpy.get_type("io.deephaven.integrations.python.PythonDeephavenSession")
+    py_dh_session = _JPythonScriptSession(_j_test_update_graph, _j_operation_initializer, no_op_thread_factory, py_scope_jpy)
 
 def _expand_wildcards_in_list(elements):
     """
