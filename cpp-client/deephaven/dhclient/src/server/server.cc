@@ -137,7 +137,7 @@ std::shared_ptr<Server> Server::CreateFromTarget(
     ConfigurationConstantsRequest cc_req;
     ConfigurationConstantsResponse cc_resp;
     grpc::ClientContext ctx;
-    ctx.AddMetadata(kAuthorizationKey, client_options.AuthorizationValue());
+    ctx.AddMetadata(std::string(kAuthorizationHeader), client_options.AuthorizationValue());
     for (const auto &header : client_options.ExtraHeaders()) {
       ctx.AddMetadata(header.first, header.second);
     }
@@ -354,7 +354,7 @@ void Server::SendRpc(const std::function<grpc::Status(grpc::ClientContext *)> &c
   // Authorization token and timeout housekeeping
   const auto &metadata = ctx.GetServerInitialMetadata();
 
-  auto ip = metadata.find(kAuthorizationKey);
+  auto ip = metadata.find(std::string(kAuthorizationHeader));
   std::unique_lock lock(mutex_);
   if (ip != metadata.end()) {
     const auto &val = ip->second;
