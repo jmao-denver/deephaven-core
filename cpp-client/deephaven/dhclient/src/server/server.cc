@@ -31,7 +31,7 @@ using UpdateByOperation = io::deephaven::proto::backplane::grpc::UpdateByRequest
 
 namespace deephaven::client::server {
 
-const char *const Server::kAuthorizationKey = "authorization";
+using deephaven::client::kAuthorizationHeader;
 
 namespace {
 std::optional<std::chrono::milliseconds> ExtractExpirationInterval(
@@ -151,7 +151,7 @@ std::shared_ptr<Server> Server::CreateFromTarget(
     }
 
     const auto &md = ctx.GetServerInitialMetadata();
-    auto ip = md.find(kAuthorizationKey);
+    auto ip = md.find(std::string(kAuthorizationHeader));
     if (ip == md.end()) {
       throw std::runtime_error(
           DEEPHAVEN_LOCATION_STR("Configuration response didn't contain authorization token"));
@@ -177,10 +177,10 @@ std::shared_ptr<Server> Server::CreateFromTarget(
       expiration_interval, next_handshake_time);
 
   // Now add bearer middleware factory to FlightClient options
-  // The factory holds raw pointers to Server's sessionToken_ and mutex_
+  // The factory holds raw pointers to Server's sessionToken_, extraHeaders_, and mutex_
   // This is safe because Server owns FlightClient, so FlightClient will be destroyed first
   options.middleware.push_back(
-      std::make_shared<BearerMiddlewareFactory>(&result->sessionToken_, &result->mutex_));
+      std::make_shared<BearerMiddlewareFactory>(&result->sessionToken_, &result->extraHeaders_, &result->mutex_));
 
   auto client_res = arrow::flight::FlightClient::Connect(*location_res, options);
   if (!client_res.ok()) {
@@ -433,7 +433,7 @@ void Server::ForEachHeaderNameAndValue(
   mutex_.lock();
   auto token_copy = sessionToken_;
   mutex_.unlock();
-  fun(kAuthorizationKey, token_copy);
+  fun(std::string(kAuthorizationHeader), token_copy);
   for (const auto &header : extraHeaders_) {
     fun(header.first, header.second);
   }

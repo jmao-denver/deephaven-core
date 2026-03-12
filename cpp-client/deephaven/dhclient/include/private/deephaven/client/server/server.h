@@ -152,7 +152,6 @@ private:
       bool disregard_cancellation_state);
   void ReleaseUnchecked(Ticket ticket);
 
-  static const char *const kAuthorizationKey;
 
   static void SendKeepaliveMessages(const std::shared_ptr<Server> &self);
   [[nodiscard]]
