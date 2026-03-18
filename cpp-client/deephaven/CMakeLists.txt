@@ -12,13 +12,7 @@ set(deephaven_VERSION 0.39.0)
 set(CMAKE_CXX_STANDARD 17)
 
 if(WIN32)
-    # Force these for the ENTIRE project globally
-    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
-
-    if(MSVC)
-        # Force the networking header to be injected BEFORE any other line of code
-        add_compile_options(/FI"winsock2.h")
-    endif()
+    add_compile_definitions(WIN32_LEAN_AND_MEAN NOMINMAX)
 endif()
 
 # for CMAKE_INSTALL_{dir}
