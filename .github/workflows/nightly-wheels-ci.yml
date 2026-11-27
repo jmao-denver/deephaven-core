@@ -6,6 +6,9 @@ on:
     # for runners.
     - cron:  '30 5 * * *'
   workflow_dispatch:
+  # TEMPORARY: fork test only, never merge.
+  push:
+    branches: [ 'nightly/**' ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,7 +26,7 @@ jobs:
     # Publishing must only ever happen from the canonical repository's main branch. The
     # `schedule` trigger already only fires on the default branch, but `workflow_dispatch` can be
     # invoked from any branch, so the ref is checked explicitly here.
-    if: ${{ github.repository_owner == 'deephaven' && github.ref == 'refs/heads/main' }}
+    # TEMPORARY: guard removed for the fork test.
 
     env:
       GAR_PROJECT: deephaven-testing
